@@ -1,9 +1,10 @@
 package eu.micer.tweety.util.extensions
 
-import io.reactivex.Single
+import io.reactivex.Flowable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
-fun <T> Single<T>.subscribeObserveInBackground(): Single<T> {
+fun <T> Flowable<T>.subscribeBackgroundObserveMain(): Flowable<T> {
     return subscribeOn(Schedulers.io())
-        .observeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
 }

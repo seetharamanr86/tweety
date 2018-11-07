@@ -1,5 +1,7 @@
 package eu.micer.tweety.feature.tweetlist.vm
 
+import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.MutableLiveData
 import com.github.ajalt.timberkt.Timber.e
 import com.google.gson.Gson
 import com.google.gson.stream.JsonReader
@@ -7,17 +9,21 @@ import eu.micer.tweety.base.BaseViewModel
 import eu.micer.tweety.network.TwitterApi
 import eu.micer.tweety.network.model.Tweet
 import eu.micer.tweety.util.event.Event1
-import eu.micer.tweety.util.extensions.subscribeObserveInBackground
+import eu.micer.tweety.util.extensions.default
+import eu.micer.tweety.util.extensions.subscribeBackgroundObserveMain
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.addTo
 
 
 class TweetListViewModel(private val api: TwitterApi) : BaseViewModel() {
+    private val tweetListLiveData = MutableLiveData<ArrayList<Tweet>>().default(ArrayList())
+
+    val tweetList: LiveData<ArrayList<Tweet>>
+        get() = tweetListLiveData
 
     fun getTweets() {
-        api.getTweetsStream("trump")
-            .subscribeObserveInBackground()
+        api.getTweetsStream("apple")
             .flatMapObservable { responseBody ->
                 Observable.create<Tweet> { emitter ->
                     JsonReader(responseBody.charStream())
@@ -31,8 +37,10 @@ class TweetListViewModel(private val api: TwitterApi) : BaseViewModel() {
                 }
             }
             .toFlowable(BackpressureStrategy.BUFFER)
+            .subscribeBackgroundObserveMain()
             .subscribe({ tweet: Tweet ->
                 println("tweet created at: ${tweet.createdAt}")
+                addNewTweet(tweet)
             }, { t: Throwable ->
                 t.message?.let {
                     showErrorEvent.value = Event1(it)
@@ -40,5 +48,11 @@ class TweetListViewModel(private val api: TwitterApi) : BaseViewModel() {
                 e(t)
             })
             .addTo(compositeDisposable)
+    }
+
+    private fun addNewTweet(tweet: Tweet) {
+        val list = tweetListLiveData.value
+        list?.add(tweet)
+        tweetListLiveData.value = list
     }
 }
