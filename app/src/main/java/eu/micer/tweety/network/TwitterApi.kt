@@ -1,7 +1,7 @@
 package eu.micer.tweety.network
 
 import eu.micer.tweety.util.Constants
-import io.reactivex.Observable
+import io.reactivex.Single
 import okhttp3.ResponseBody
 import retrofit2.http.POST
 import retrofit2.http.Query
@@ -11,5 +11,5 @@ interface TwitterApi {
 
     @POST(Constants.Network.URL_TWITTER_STATUSES)
     @Streaming
-    fun getTweetsStream(@Query("track") track: String): Observable<ResponseBody>
+    fun getTweetsStream(@Query("track") track: String): Single<ResponseBody>
 }

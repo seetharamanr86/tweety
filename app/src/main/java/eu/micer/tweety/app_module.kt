@@ -13,6 +13,7 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import se.akerfeldt.okhttp.signpost.OkHttpOAuthConsumer
 import se.akerfeldt.okhttp.signpost.SigningInterceptor
+import java.util.concurrent.TimeUnit
 
 /**
  * KOIN - keywords:
@@ -55,6 +56,8 @@ val networkModule = applicationContext {
             .addInterceptor(HttpLoggingInterceptor()
                 .apply { level = HttpLoggingInterceptor.Level.BASIC }
             )
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
                 as OkHttpClient.Builder
     }
 }

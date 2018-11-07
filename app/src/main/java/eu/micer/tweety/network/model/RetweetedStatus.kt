@@ -2,7 +2,7 @@ package eu.micer.tweety.network.model
 
 import com.google.gson.annotations.SerializedName
 
-data class Tweet(
+data class RetweetedStatus(
     @SerializedName("contributors")
     val contributors: Any,
     @SerializedName("coordinates")
@@ -10,7 +10,9 @@ data class Tweet(
     @SerializedName("created_at")
     val createdAt: String,
     @SerializedName("entities")
-    val entities: Entities,
+    val entities: EntitiesX,
+    @SerializedName("extended_tweet")
+    val extendedTweet: ExtendedTweet,
     @SerializedName("favorite_count")
     val favoriteCount: Int,
     @SerializedName("favorited")
@@ -38,7 +40,7 @@ data class Tweet(
     @SerializedName("lang")
     val lang: String,
     @SerializedName("place")
-    val place: Any,
+    val place: Place,
     @SerializedName("quote_count")
     val quoteCount: Int,
     @SerializedName("reply_count")
@@ -47,14 +49,10 @@ data class Tweet(
     val retweetCount: Int,
     @SerializedName("retweeted")
     val retweeted: Boolean,
-    @SerializedName("retweeted_status")
-    val retweetedStatus: RetweetedStatus,
     @SerializedName("source")
     val source: String,
     @SerializedName("text")
     val text: String,
-    @SerializedName("timestamp_ms")
-    val timestampMs: String,
     @SerializedName("truncated")
     val truncated: Boolean,
     @SerializedName("user")
