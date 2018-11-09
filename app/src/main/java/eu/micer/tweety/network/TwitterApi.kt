@@ -9,7 +9,7 @@ import retrofit2.http.Streaming
 
 interface TwitterApi {
 
-    @POST(Constants.Network.URL_TWITTER_STATUSES)
+    @POST(Constants.Network.URL_TWITTER_STATUSES_FILTER)
     @Streaming
     fun getTweetsStream(@Query("track") track: String): Single<ResponseBody>
 }

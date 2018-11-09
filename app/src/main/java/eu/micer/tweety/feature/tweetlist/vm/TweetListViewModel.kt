@@ -10,38 +10,49 @@ import eu.micer.tweety.network.TwitterApi
 import eu.micer.tweety.network.model.Tweet
 import eu.micer.tweety.util.event.Event1
 import eu.micer.tweety.util.extensions.default
-import eu.micer.tweety.util.extensions.subscribeBackgroundObserveMain
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
+import io.reactivex.schedulers.Schedulers
+import timber.log.Timber.d
 
 
 class TweetListViewModel(private val api: TwitterApi) : BaseViewModel() {
     private val tweetListLiveData = MutableLiveData<ArrayList<Tweet>>().default(ArrayList())
+    private var stopReading = false
 
     val tweetList: LiveData<ArrayList<Tweet>>
         get() = tweetListLiveData
 
-    fun getTweets() {
-        api.getTweetsStream("apple")
+    /**
+     * @ImplNote: requestOn = false in subscribeOn() is needed to avoid deadlock in emitter,
+     * see https://stackoverflow.com/a/44921023/1101730
+     */
+    fun getTweets(track: String) {
+        api.getTweetsStream(track)
             .flatMapObservable { responseBody ->
                 Observable.create<Tweet> { emitter ->
                     JsonReader(responseBody.charStream())
                         .also { it.isLenient = true }
                         .use { reader ->
-                            while (reader.hasNext()) {
+                            stopReading = false
+                            while (!stopReading && reader.hasNext()) {
                                 emitter.onNext(Gson().fromJson<Tweet>(reader, Tweet::class.java))
                             }
                             emitter.onComplete()
+                            d("emitter on complete")
                         }
                 }
             }
             .toFlowable(BackpressureStrategy.BUFFER)
-            .subscribeBackgroundObserveMain()
+            .subscribeOn(Schedulers.io(), false)
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ tweet: Tweet ->
-                println("tweet created at: ${tweet.createdAt}")
+                d("tweet created at: ${tweet.createdAt}")
                 addNewTweet(tweet)
             }, { t: Throwable ->
+                // TODO java.net.SocketTimeoutException: timeout -> retry???
                 t.message?.let {
                     showErrorEvent.value = Event1(it)
                 }

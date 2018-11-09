@@ -26,17 +26,18 @@ class MainActivity : BaseActivity() {
 
         setupViews()
 
-        tweetListViewModel.getTweets()
-
         tweetListViewModel.tweetList.observe(this, Observer {
             it?.let { list ->
                 tweetAdapter.updateItems(list)
+                rv_tweet_list.scrollToPosition(0)
             }
         })
+
+        tweetListViewModel.getTweets("sunshine")
     }
 
     private fun setupViews() {
-        rv_tweet_list.layoutManager = LinearLayoutManager(this).also { it.reverseLayout = true }
+        rv_tweet_list.layoutManager = LinearLayoutManager(this)
 
         tweetListViewModel.tweetList.value?.let {
             tweetAdapter = TweetAdapter(it, this)

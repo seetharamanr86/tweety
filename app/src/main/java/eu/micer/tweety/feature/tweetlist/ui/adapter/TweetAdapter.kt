@@ -10,7 +10,7 @@ import eu.micer.tweety.R
 import eu.micer.tweety.network.model.Tweet
 import kotlinx.android.synthetic.main.item_tweet.view.*
 
-class TweetAdapter(private var items: ArrayList<Tweet>, private val context: Context) :
+class TweetAdapter(private var items: List<Tweet>, private val context: Context) :
     RecyclerView.Adapter<ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -23,14 +23,18 @@ class TweetAdapter(private var items: ArrayList<Tweet>, private val context: Con
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.tvCreatedAt.text = items[position].createdAt
+        holder.tvText.text = items[position].text
+        holder.tvUser.text = items[position].user.name
     }
 
     fun updateItems(tweetList: ArrayList<Tweet>) {
-        items = tweetList
+        items = tweetList.sortedWith(compareByDescending { it.timestampMs })
         notifyDataSetChanged()
     }
 }
 
 class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     val tvCreatedAt: TextView = view.tv_created_at
+    val tvText: TextView = view.tv_text
+    val tvUser: TextView = view.tv_user
 }
