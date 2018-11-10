@@ -6,7 +6,7 @@ import eu.micer.tweety.feature.tweetlist.model.database.TweetDao
 import eu.micer.tweety.feature.tweetlist.model.database.TweetEntity
 import eu.micer.tweety.network.TwitterApi
 import eu.micer.tweety.network.model.Tweet
-import eu.micer.tweety.util.extensions.runInBackground
+import eu.micer.tweety.util.extensions.runAllOnIoThread
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Maybe
@@ -49,7 +49,7 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
                 tweetDao.getAllSync().toFlowable()
             })
             .doOnNext(tweetDao::insert) // insert every new tweet into database
-            .runInBackground()
+            .runAllOnIoThread()
     }
 
     fun getOfflineTweetsFlowable(): Flowable<List<TweetEntity>> {
