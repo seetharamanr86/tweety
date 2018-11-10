@@ -34,7 +34,6 @@ class MainActivity : BaseActivity() {
         tweetListViewModel.tweetList.observe(this, Observer {
             it?.let { list ->
                 tweetAdapter.updateItems(list)
-                rv_tweet_list.scrollToPosition(0)
             }
         })
 
@@ -85,7 +84,7 @@ class MainActivity : BaseActivity() {
                 if (et_search_text.text.isNotEmpty()) {
                     view.hideKeyboard()
                     btn_start_stop.text = getString(R.string.stop)
-                    tweetListViewModel.receiveTweets(et_search_text.text.toString())
+                    tweetListViewModel.receiveTweets(et_search_text.text.toString().trim())
                 }
             } else {
                 // stop receiving tweets

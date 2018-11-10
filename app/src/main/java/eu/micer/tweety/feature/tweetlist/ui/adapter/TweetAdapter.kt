@@ -13,6 +13,8 @@ import kotlinx.android.synthetic.main.item_tweet.view.*
 class TweetAdapter(private var items: List<TweetEntity>, private val context: Context) :
     RecyclerView.Adapter<ViewHolder>() {
 
+    private var recyclerView: RecyclerView? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_tweet, parent, false))
     }
@@ -27,9 +29,23 @@ class TweetAdapter(private var items: List<TweetEntity>, private val context: Co
         holder.tvUser.text = items[position].user
     }
 
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        this.recyclerView = recyclerView
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView)
+        this.recyclerView = null
+    }
+
     fun updateItems(tweetList: ArrayList<TweetEntity>) {
-        items = tweetList.sortedWith(compareByDescending { it.timestamp })
+        val sortedTweetList = tweetList.sortedWith(compareByDescending { it.timestamp })
+        items = sortedTweetList
         notifyDataSetChanged()
+        if (sortedTweetList.isNotEmpty() && items.isNotEmpty() && sortedTweetList[0] != items[0]) {
+            recyclerView?.scrollToPosition(0)
+        }
     }
 }
 
