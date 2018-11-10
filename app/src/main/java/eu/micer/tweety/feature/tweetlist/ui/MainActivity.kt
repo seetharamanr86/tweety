@@ -8,6 +8,7 @@ import eu.micer.tweety.base.BaseActivity
 import eu.micer.tweety.base.BaseViewModel
 import eu.micer.tweety.feature.tweetlist.ui.adapter.TweetAdapter
 import eu.micer.tweety.feature.tweetlist.vm.TweetListViewModel
+import eu.micer.tweety.util.extensions.hideKeyboard
 import kotlinx.android.synthetic.main.activity_main.*
 import org.koin.android.architecture.ext.viewModel
 
@@ -26,6 +27,7 @@ class MainActivity : BaseActivity() {
 
         setupViews()
 
+        // setup LiveData observers
         tweetListViewModel.tweetList.observe(this, Observer {
             it?.let { list ->
                 tweetAdapter.updateItems(list)
@@ -33,7 +35,11 @@ class MainActivity : BaseActivity() {
             }
         })
 
-        tweetListViewModel.getTweets("sunshine")
+        tweetListViewModel.isReceivingData().observe(this, Observer { isReceiving ->
+            isReceiving?.let {
+                btn_start_stop.text = getString(if (it) R.string.stop else R.string.track)
+            }
+        })
     }
 
     private fun setupViews() {
@@ -44,5 +50,20 @@ class MainActivity : BaseActivity() {
         }
 
         rv_tweet_list.adapter = tweetAdapter
+
+        btn_start_stop.setOnClickListener { view ->
+            if (btn_start_stop.text == getString(R.string.track)) {
+                // start receiving tweets
+                if (et_search_text.text.isNotEmpty()) {
+                    view.hideKeyboard()
+                    btn_start_stop.text = getString(R.string.stop)
+                    tweetListViewModel.getTweets(et_search_text.text.toString())
+                }
+            } else {
+                // stop receiving tweets
+                tweetListViewModel.stopReceivingData()
+                btn_start_stop.text = getString(R.string.track)
+            }
+        }
     }
 }

@@ -2,4 +2,5 @@
 <resources>
     <dimen name="item_tweet_margin">8dp</dimen>
     <dimen name="item_tweet_elevation">2dp</dimen>
+    <dimen name="text_size_hash_symbol">24sp</dimen>
 </resources>

@@ -20,10 +20,13 @@ import timber.log.Timber.d
 
 class TweetListViewModel(private val api: TwitterApi) : BaseViewModel() {
     private val tweetListLiveData = MutableLiveData<ArrayList<Tweet>>().default(ArrayList())
-    private var stopReading = false
+    private val isReceivingDataMutableLiveData = MutableLiveData<Boolean>().default(false)
+    private var isReceivingData = false
 
     val tweetList: LiveData<ArrayList<Tweet>>
         get() = tweetListLiveData
+
+    fun isReceivingData() = isReceivingDataMutableLiveData
 
     /**
      * @ImplNote: requestOn = false in subscribeOn() is needed to avoid deadlock in emitter,
@@ -36,8 +39,9 @@ class TweetListViewModel(private val api: TwitterApi) : BaseViewModel() {
                     JsonReader(responseBody.charStream())
                         .also { it.isLenient = true }
                         .use { reader ->
-                            stopReading = false
-                            while (!stopReading && reader.hasNext()) {
+                            isReceivingData = true
+                            isReceivingDataMutableLiveData.postValue(isReceivingData)
+                            while (isReceivingData && reader.hasNext()) {
                                 emitter.onNext(Gson().fromJson<Tweet>(reader, Tweet::class.java))
                             }
                             emitter.onComplete()
@@ -49,10 +53,14 @@ class TweetListViewModel(private val api: TwitterApi) : BaseViewModel() {
             .subscribeOn(Schedulers.io(), false)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ tweet: Tweet ->
-                d("tweet created at: ${tweet.createdAt}")
-                addNewTweet(tweet)
+                if (isReceivingData) {
+                    d("tweet created at: ${tweet.createdAt}")
+                    addNewTweet(tweet)
+                }
             }, { t: Throwable ->
                 // TODO java.net.SocketTimeoutException: timeout -> retry???
+                isReceivingData = false
+                isReceivingDataMutableLiveData.postValue(isReceivingData)
                 t.message?.let {
                     showErrorEvent.value = Event1(it)
                 }
@@ -65,5 +73,9 @@ class TweetListViewModel(private val api: TwitterApi) : BaseViewModel() {
         val list = tweetListLiveData.value
         list?.add(tweet)
         tweetListLiveData.value = list
+    }
+
+    fun stopReceivingData() {
+        isReceivingData = false
     }
 }

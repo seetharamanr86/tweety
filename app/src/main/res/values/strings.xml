@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Tweety</string>
+    <string name="track">track</string>
+    <string name="stop">stop</string>
+    <string name="hash_symbol">#</string>
 </resources>
