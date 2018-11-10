@@ -57,7 +57,7 @@ class MainActivity : BaseActivity() {
                 if (et_search_text.text.isNotEmpty()) {
                     view.hideKeyboard()
                     btn_start_stop.text = getString(R.string.stop)
-                    tweetListViewModel.getTweets(et_search_text.text.toString())
+                    tweetListViewModel.receiveTweets(et_search_text.text.toString())
                 }
             } else {
                 // stop receiving tweets

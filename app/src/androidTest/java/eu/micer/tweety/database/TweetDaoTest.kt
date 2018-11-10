@@ -2,9 +2,9 @@ package eu.micer.tweety.database
 
 import android.support.test.runner.AndroidJUnit4
 import eu.micer.tweety.di.roomTestModule
-import eu.micer.tweety.feature.tweetlist.model.TweetDao
-import eu.micer.tweety.feature.tweetlist.model.TweetDatabase
-import eu.micer.tweety.feature.tweetlist.model.TweetEntity
+import eu.micer.tweety.feature.tweetlist.model.database.TweetDao
+import eu.micer.tweety.feature.tweetlist.model.database.TweetDatabase
+import eu.micer.tweety.feature.tweetlist.model.database.TweetEntity
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -50,10 +50,34 @@ class TweetDaoTest : KoinTest {
 
     private fun getTweetEntityList(): List<TweetEntity> {
         return arrayListOf(
-            TweetEntity(id = 1, text = "Sample test text #1.", user = "Dave Lister", timestamp = "1541843586"),
-            TweetEntity(id = 2, text = "Sample test text #2.", user = "Arnold J. Rimmer", timestamp = "1541843286"),
-            TweetEntity(id = 3, text = "Sample test text #3.", user = "Cat", timestamp = "1541844586"),
-            TweetEntity(id = 4, text = "Sample test text #4.", user = "Christine", timestamp = "1541840423")
+            TweetEntity(
+                id = 1,
+                text = "Sample test text #1.",
+                user = "Dave Lister",
+                createdAt = "Fri Nov 09 20:47:39 +0000 2018",
+                timestamp = "1541843586"
+            ),
+            TweetEntity(
+                id = 2,
+                text = "Sample test text #2.",
+                user = "Arnold J. Rimmer",
+                createdAt = "Fri Nov 09 20:47:39 +0000 2018",
+                timestamp = "1541843286"
+            ),
+            TweetEntity(
+                id = 3,
+                text = "Sample test text #3.",
+                user = "Cat",
+                createdAt = "Fri Nov 09 20:47:39 +0000 2018",
+                timestamp = "1541844586"
+            ),
+            TweetEntity(
+                id = 4,
+                text = "Sample test text #4.",
+                user = "Christine",
+                createdAt = "Fri Nov 09 20:47:39 +0000 2018",
+                timestamp = "1541840423"
+            )
         )
     }
 }

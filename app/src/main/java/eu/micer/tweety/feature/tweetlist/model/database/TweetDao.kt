@@ -1,7 +1,7 @@
-package eu.micer.tweety.feature.tweetlist.model
+package eu.micer.tweety.feature.tweetlist.model.database
 
 import android.arch.persistence.room.*
-import io.reactivex.Single
+import io.reactivex.Maybe
 
 @Dao
 interface TweetDao {
@@ -15,7 +15,7 @@ interface TweetDao {
     fun delete(tweetEntity: TweetEntity)
 
     @Query("SELECT * FROM TweetEntity WHERE id = :id")
-    fun findById(id: Int): Single<TweetEntity>
+    fun findById(id: Int): Maybe<TweetEntity>
 
     @Query("SELECT * FROM TweetEntity")
     fun getAll(): List<TweetEntity>

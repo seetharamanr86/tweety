@@ -1,7 +1,8 @@
 package eu.micer.tweety.di
 
 import android.arch.persistence.room.Room
-import eu.micer.tweety.feature.tweetlist.model.TweetDatabase
+import eu.micer.tweety.feature.tweetlist.model.TweetRepository
+import eu.micer.tweety.feature.tweetlist.model.database.TweetDatabase
 import eu.micer.tweety.feature.tweetlist.vm.TweetListViewModel
 import eu.micer.tweety.network.TwitterApi
 import eu.micer.tweety.util.Constants
@@ -28,7 +29,8 @@ import java.util.concurrent.TimeUnit
  */
 
 val appModule = applicationContext {
-    viewModel { TweetListViewModel(get(), get()) }
+    viewModel { TweetListViewModel(get()) }
+    bean { TweetRepository(get(), get()) }
 }
 
 val networkModule = applicationContext {
