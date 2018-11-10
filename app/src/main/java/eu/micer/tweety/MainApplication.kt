@@ -3,6 +3,7 @@ package eu.micer.tweety
 import android.support.multidex.MultiDexApplication
 import com.github.ajalt.timberkt.Timber
 import com.github.ajalt.timberkt.Timber.DebugTree
+import eu.micer.tweety.di.allModules
 import eu.micer.tweety.util.UserPreference
 import org.koin.android.ext.android.startKoin
 

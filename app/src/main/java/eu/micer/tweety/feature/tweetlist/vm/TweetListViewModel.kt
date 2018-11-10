@@ -77,7 +77,7 @@ class TweetListViewModel(private val api: TwitterApi, private val db: TweetDao) 
             user = tweet.user.name,
             timestamp = tweet.timestampMs
         )
-        db.insertTweet(tweetEntity)
+        db.insert(tweetEntity)
 //        val list = tweetListLiveData.value
 //        list?.add(tweet)
 //        tweetListLiveData.value = list

@@ -1,0 +1,59 @@
+package eu.micer.tweety.database
+
+import android.support.test.runner.AndroidJUnit4
+import eu.micer.tweety.di.roomTestModule
+import eu.micer.tweety.feature.tweetlist.model.TweetDao
+import eu.micer.tweety.feature.tweetlist.model.TweetDatabase
+import eu.micer.tweety.feature.tweetlist.model.TweetEntity
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.koin.standalone.StandAloneContext.closeKoin
+import org.koin.standalone.StandAloneContext.loadKoinModules
+import org.koin.standalone.inject
+import org.koin.test.KoinTest
+
+@RunWith(AndroidJUnit4::class)
+class TweetDaoTest : KoinTest {
+
+    private val tweetDatabase: TweetDatabase by inject()
+    private val tweetDao: TweetDao by inject()
+
+    @Before()
+    fun before() {
+        loadKoinModules(roomTestModule)
+    }
+
+    @After
+    fun after() {
+        tweetDatabase.close()
+        closeKoin()
+    }
+
+    @Test
+    fun testInsertAll() {
+        val entities = getTweetEntityList()
+
+        tweetDao.insertAll(entities)
+        val ids = entities.map { it.id }
+
+        val requestedEntities = ids.map {
+                tweetDao.findById(it).blockingGet()
+        }
+
+        Assert.assertEquals(entities, requestedEntities)
+    }
+
+    // TODO write more tests
+
+    private fun getTweetEntityList(): List<TweetEntity> {
+        return arrayListOf(
+            TweetEntity(id = 1, text = "Sample test text #1.", user = "Dave Lister", timestamp = "1541843586"),
+            TweetEntity(id = 2, text = "Sample test text #2.", user = "Arnold J. Rimmer", timestamp = "1541843286"),
+            TweetEntity(id = 3, text = "Sample test text #3.", user = "Cat", timestamp = "1541844586"),
+            TweetEntity(id = 4, text = "Sample test text #4.", user = "Christine", timestamp = "1541840423")
+        )
+    }
+}

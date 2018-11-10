@@ -1,4 +1,4 @@
-package eu.micer.tweety
+package eu.micer.tweety.di
 
 import android.arch.persistence.room.Room
 import eu.micer.tweety.feature.tweetlist.model.TweetDatabase

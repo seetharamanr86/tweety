@@ -4,6 +4,8 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+apply plugin: 'kotlin-kapt'
+
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -37,10 +39,12 @@ dependencies {
 
     // LiveData + ViewModel
     implementation "android.arch.lifecycle:extensions:$versions.arch_lifecycle"
+    kapt "android.arch.lifecycle:compiler:$versions.arch_lifecycle"
 
     // Room database
+    implementation "android.arch.persistence.room:rxjava2:$versions.arch_lifecycle"
     implementation "android.arch.persistence.room:runtime:$versions.arch_lifecycle"
-    annotationProcessor "android.arch.persistence.room:compiler:$versions.arch_lifecycle"
+    kapt "android.arch.persistence.room:compiler:$versions.arch_lifecycle"
 
     // RxJava 2
     implementation "io.reactivex.rxjava2:rxkotlin:$versions.rxkotlin"
@@ -79,4 +83,5 @@ dependencies {
     testImplementation "junit:junit:$versions.junit"
     androidTestImplementation "com.android.support.test:runner:$versions.test_runner"
     androidTestImplementation "com.android.support.test.espresso:espresso-core:$versions.espresso"
+    androidTestImplementation "org.koin:koin-test:$versions.koin"
 }
