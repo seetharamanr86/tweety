@@ -1,5 +1,7 @@
 package eu.micer.tweety
 
+import android.arch.persistence.room.Room
+import eu.micer.tweety.feature.tweetlist.model.TweetDatabase
 import eu.micer.tweety.feature.tweetlist.vm.TweetListViewModel
 import eu.micer.tweety.network.TwitterApi
 import eu.micer.tweety.util.Constants
@@ -7,6 +9,7 @@ import eu.micer.tweety.util.UserPreference
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.architecture.ext.viewModel
+import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module.applicationContext
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
@@ -25,7 +28,7 @@ import java.util.concurrent.TimeUnit
  */
 
 val appModule = applicationContext {
-    viewModel { TweetListViewModel(get()) }
+    viewModel { TweetListViewModel(get(), get()) }
 }
 
 val networkModule = applicationContext {
@@ -63,8 +66,20 @@ val networkModule = applicationContext {
     }
 }
 
+val databaseModule = applicationContext {
+    // Tweet Room database instance
+    bean {
+        Room.databaseBuilder(androidApplication(), TweetDatabase::class.java, "tweet-db")
+            .build()
+    }
+
+    // Tweet DAO interface instance
+    bean { get<TweetDatabase>().tweetDao() }
+}
+
 // Gather all app modules
 val allModules = listOf(
     appModule,
-    networkModule
+    networkModule,
+    databaseModule
 )

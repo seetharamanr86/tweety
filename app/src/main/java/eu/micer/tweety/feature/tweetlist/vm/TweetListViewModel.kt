@@ -6,6 +6,8 @@ import com.github.ajalt.timberkt.Timber.e
 import com.google.gson.Gson
 import com.google.gson.stream.JsonReader
 import eu.micer.tweety.base.BaseViewModel
+import eu.micer.tweety.feature.tweetlist.model.TweetDao
+import eu.micer.tweety.feature.tweetlist.model.TweetEntity
 import eu.micer.tweety.network.TwitterApi
 import eu.micer.tweety.network.model.Tweet
 import eu.micer.tweety.util.event.Event1
@@ -18,7 +20,7 @@ import io.reactivex.schedulers.Schedulers
 import timber.log.Timber.d
 
 
-class TweetListViewModel(private val api: TwitterApi) : BaseViewModel() {
+class TweetListViewModel(private val api: TwitterApi, private val db: TweetDao) : BaseViewModel() {
     private val tweetListLiveData = MutableLiveData<ArrayList<Tweet>>().default(ArrayList())
     private val isReceivingDataMutableLiveData = MutableLiveData<Boolean>().default(false)
     private var isReceivingData = false
@@ -55,7 +57,7 @@ class TweetListViewModel(private val api: TwitterApi) : BaseViewModel() {
             .subscribe({ tweet: Tweet ->
                 if (isReceivingData) {
                     d("tweet created at: ${tweet.createdAt}")
-                    addNewTweet(tweet)
+                    saveNewTweet(tweet)
                 }
             }, { t: Throwable ->
                 // TODO java.net.SocketTimeoutException: timeout -> retry???
@@ -69,10 +71,16 @@ class TweetListViewModel(private val api: TwitterApi) : BaseViewModel() {
             .addTo(compositeDisposable)
     }
 
-    private fun addNewTweet(tweet: Tweet) {
-        val list = tweetListLiveData.value
-        list?.add(tweet)
-        tweetListLiveData.value = list
+    private fun saveNewTweet(tweet: Tweet) {
+        val tweetEntity = TweetEntity(
+            text = tweet.text,
+            user = tweet.user.name,
+            timestamp = tweet.timestampMs
+        )
+        db.insertTweet(tweetEntity)
+//        val list = tweetListLiveData.value
+//        list?.add(tweet)
+//        tweetListLiveData.value = list
     }
 
     fun stopReceivingData() {

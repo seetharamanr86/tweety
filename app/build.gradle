@@ -38,9 +38,9 @@ dependencies {
     // LiveData + ViewModel
     implementation "android.arch.lifecycle:extensions:$versions.arch_lifecycle"
 
-    // Navigation
-    implementation "android.arch.navigation:navigation-fragment-ktx:$versions.navigation"
-    implementation "android.arch.navigation:navigation-ui-ktx:$versions.navigation"
+    // Room database
+    implementation "android.arch.persistence.room:runtime:$versions.arch_lifecycle"
+    annotationProcessor "android.arch.persistence.room:compiler:$versions.arch_lifecycle"
 
     // RxJava 2
     implementation "io.reactivex.rxjava2:rxkotlin:$versions.rxkotlin"
