@@ -7,9 +7,9 @@ import android.arch.persistence.room.PrimaryKey
 data class TweetEntity(
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0,
+    var tweetId: Long,
     var text: String,
     var user: String,
     var createdAt: String,  // TODO convert to Date
-    var timestamp: String,
-    var fromLocalDatabase: Boolean = false
+    var timestamp: String
 )

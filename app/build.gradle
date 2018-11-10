@@ -37,8 +37,9 @@ dependencies {
     implementation "com.android.support:appcompat-v7:$versions.support"
     implementation "com.android.support.constraint:constraint-layout:$versions.constraint_layout"
 
-    // LiveData + ViewModel
+    // Architecture Components
     implementation "android.arch.lifecycle:extensions:$versions.arch_lifecycle"
+    implementation "android.arch.lifecycle:reactivestreams:$versions.arch_lifecycle"
     kapt "android.arch.lifecycle:compiler:$versions.arch_lifecycle"
 
     // Room database

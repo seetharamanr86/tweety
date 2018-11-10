@@ -3,4 +3,5 @@
     <string name="track">track</string>
     <string name="stop">stop</string>
     <string name="hash_symbol">#</string>
+    <string name="clear_all">Clear all</string>
 </resources>

@@ -14,6 +14,9 @@ interface TweetDao {
     @Delete
     fun delete(tweetEntity: TweetEntity)
 
+    @Query("DELETE FROM TweetEntity")
+    fun deleteAll()
+
     @Query("SELECT * FROM TweetEntity WHERE id = :id")
     fun findById(id: Int): Maybe<TweetEntity>
 

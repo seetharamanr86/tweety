@@ -3,6 +3,9 @@ package eu.micer.tweety.feature.tweetlist.ui
 import android.arch.lifecycle.Observer
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import eu.micer.tweety.R
 import eu.micer.tweety.base.BaseActivity
 import eu.micer.tweety.base.BaseViewModel
@@ -40,6 +43,23 @@ class MainActivity : BaseActivity() {
                 btn_start_stop.text = getString(if (it) R.string.stop else R.string.track)
             }
         })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            R.id.clear_all -> {
+                tweetListViewModel.clearAll()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun setupViews() {

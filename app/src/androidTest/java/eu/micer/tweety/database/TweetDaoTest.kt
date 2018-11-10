@@ -52,6 +52,7 @@ class TweetDaoTest : KoinTest {
         return arrayListOf(
             TweetEntity(
                 id = 1,
+                tweetId = 987654,
                 text = "Sample test text #1.",
                 user = "Dave Lister",
                 createdAt = "Fri Nov 09 20:47:39 +0000 2018",
@@ -59,6 +60,7 @@ class TweetDaoTest : KoinTest {
             ),
             TweetEntity(
                 id = 2,
+                tweetId = 987653,
                 text = "Sample test text #2.",
                 user = "Arnold J. Rimmer",
                 createdAt = "Fri Nov 09 20:47:39 +0000 2018",
@@ -66,6 +68,7 @@ class TweetDaoTest : KoinTest {
             ),
             TweetEntity(
                 id = 3,
+                tweetId = 987652,
                 text = "Sample test text #3.",
                 user = "Cat",
                 createdAt = "Fri Nov 09 20:47:39 +0000 2018",
@@ -73,6 +76,7 @@ class TweetDaoTest : KoinTest {
             ),
             TweetEntity(
                 id = 4,
+                tweetId = 987651,
                 text = "Sample test text #4.",
                 user = "Christine",
                 createdAt = "Fri Nov 09 20:47:39 +0000 2018",
