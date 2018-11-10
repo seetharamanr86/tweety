@@ -43,6 +43,8 @@ class MainActivity : BaseActivity() {
                 btn_start_stop.text = getString(if (it) R.string.stop else R.string.track)
             }
         })
+
+        tweetListViewModel.loadLastData()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

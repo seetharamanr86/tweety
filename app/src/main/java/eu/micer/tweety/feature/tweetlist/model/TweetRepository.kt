@@ -6,14 +6,13 @@ import eu.micer.tweety.feature.tweetlist.model.database.TweetDao
 import eu.micer.tweety.feature.tweetlist.model.database.TweetEntity
 import eu.micer.tweety.network.TwitterApi
 import eu.micer.tweety.network.model.Tweet
+import eu.micer.tweety.util.extensions.runInBackground
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.Function
 import io.reactivex.rxkotlin.toFlowable
-import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 
 class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: TweetDao) {
@@ -47,19 +46,17 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
             }
             .onErrorResumeNext(Function {
                 // return tweets from local database in case of any error
-                tweetDao.getAll()
-                    .toFlowable()
+                tweetDao.getAllSync().toFlowable()
             })
             .doOnNext(tweetDao::insert) // insert every new tweet into database
-            /**
-             * @ImplNote: requestOn = false in subscribeOn() is needed to avoid deadlock in emitter,
-             * see https://stackoverflow.com/a/44921023/1101730
-             */
-            .subscribeOn(Schedulers.io(), false)
-            .observeOn(AndroidSchedulers.mainThread())
+            .runInBackground()
     }
 
-    fun clearOfflineData(): Maybe<Int> {
+    fun getOfflineTweetsFlowable(): Flowable<List<TweetEntity>> {
+        return tweetDao.getAll()
+    }
+
+    fun clearOfflineData(): Maybe<Void> {
         return Maybe.fromAction(tweetDao::deleteAll)
     }
 }

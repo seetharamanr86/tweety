@@ -1,6 +1,7 @@
 package eu.micer.tweety.feature.tweetlist.model.database
 
 import android.arch.persistence.room.*
+import io.reactivex.Flowable
 import io.reactivex.Maybe
 
 @Dao
@@ -21,5 +22,8 @@ interface TweetDao {
     fun findById(id: Int): Maybe<TweetEntity>
 
     @Query("SELECT * FROM TweetEntity")
-    fun getAll(): List<TweetEntity>
+    fun getAll(): Flowable<List<TweetEntity>>
+
+    @Query("SELECT * FROM TweetEntity")
+    fun getAllSync(): List<TweetEntity>
 }

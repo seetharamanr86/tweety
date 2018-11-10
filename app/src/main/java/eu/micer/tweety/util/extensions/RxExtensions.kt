@@ -9,6 +9,14 @@ import io.reactivex.schedulers.Schedulers
 
 fun <T> Maybe<T>.runInBackground(): Maybe<T> {
     return subscribeOn(Schedulers.io())
+}
+
+/**
+ * @ImplNote: requestOn = false in subscribeOn() is needed to avoid deadlock in emitter,
+ * see https://stackoverflow.com/a/44921023/1101730
+ */
+fun <T> Flowable<T>.runInBackground(): Flowable<T> {
+    return subscribeOn(Schedulers.io(), false)
         .observeOn(AndroidSchedulers.mainThread())
 }
 

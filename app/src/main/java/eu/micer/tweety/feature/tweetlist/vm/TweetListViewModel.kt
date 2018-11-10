@@ -30,7 +30,7 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
             .subscribe({ tweetEntity: TweetEntity ->
                 if (tweetRepository.receiveData) {
                     d("tweet created at: ${tweetEntity.createdAt}")
-                    saveNewTweet(tweetEntity)
+                    addNewTweet(tweetEntity)
                 }
             }, { t: Throwable ->
                 t.message?.let {
@@ -46,7 +46,18 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
         isReceivingDataMutableLiveData.postValue(false)
     }
 
-    private fun saveNewTweet(tweetEntity: TweetEntity) {
+    fun clearAll() {
+        clearTweetListLiveData()
+        tweetRepository.clearOfflineData()
+            .runInBackground()
+            .subscribe({
+                d("database rows cleared")
+            }, {
+                e(it)
+            }).addTo(compositeDisposable)
+    }
+
+    private fun addNewTweet(tweetEntity: TweetEntity) {
         val list = tweetListLiveData.value ?: ArrayList()
         if (tweetEntity !in list) {
             list.add(tweetEntity)
@@ -58,14 +69,14 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
         tweetListLiveData.value = ArrayList()
     }
 
-    fun clearAll() {
-        clearTweetListLiveData()
-        tweetRepository.clearOfflineData()
+    fun loadLastData() {
+        tweetRepository.getOfflineTweetsFlowable()
             .runInBackground()
-            .subscribe({
-                d("database rows cleared: $it")
+            .subscribe ({
+                it.forEach(this::addNewTweet)
             }, {
                 e(it)
-            }).addTo(compositeDisposable)
+            })
+            .addTo(compositeDisposable)
     }
 }
