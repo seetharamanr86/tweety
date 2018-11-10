@@ -62,6 +62,11 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        tweetListViewModel.stopReceivingData()
+    }
+
     private fun setupViews() {
         rv_tweet_list.layoutManager = LinearLayoutManager(this)
 

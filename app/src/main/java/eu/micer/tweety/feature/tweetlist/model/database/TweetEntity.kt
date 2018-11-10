@@ -12,4 +12,22 @@ data class TweetEntity(
     var user: String,
     var createdAt: String,  // TODO convert to Date
     var timestamp: String
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        return if (other is TweetEntity) {
+            tweetId == other.tweetId
+        } else {
+            false
+        }
+    }
+
+    override fun hashCode(): Int {
+        var result = id
+        result = 31 * result + tweetId.hashCode()
+        result = 31 * result + text.hashCode()
+        result = 31 * result + user.hashCode()
+        result = 31 * result + createdAt.hashCode()
+        result = 31 * result + timestamp.hashCode()
+        return result
+    }
+}

@@ -33,7 +33,6 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
                     saveNewTweet(tweetEntity)
                 }
             }, { t: Throwable ->
-                clearTweetListLiveData()
                 t.message?.let {
                     showErrorEvent.value = Event1(it)
                 }
@@ -44,6 +43,7 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
 
     fun stopReceivingData() {
         tweetRepository.receiveData = false
+        isReceivingDataMutableLiveData.postValue(false)
     }
 
     private fun saveNewTweet(tweetEntity: TweetEntity) {
@@ -62,7 +62,7 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
         clearTweetListLiveData()
         tweetRepository.clearOfflineData()
             .runInBackground()
-            .subscribe ({
+            .subscribe({
                 d("database rows cleared: $it")
             }, {
                 e(it)
