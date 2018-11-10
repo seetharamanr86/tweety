@@ -36,12 +36,12 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
                 }
             }
             .toFlowable(BackpressureStrategy.BUFFER)
-            .map { tweet: Tweet ->
+            .map { tweet: Tweet? ->
                 TweetEntity(
-                    tweetId = tweet.id,
-                    text = tweet.text,
-                    createdAt = tweet.createdAt,
-                    user = tweet.user.name
+                    tweetId = tweet?.id ?: 0,
+                    text = tweet?.text ?: "",
+                    createdAt = tweet?.createdAt ?: "",
+                    user = tweet?.user?.name ?: ""
                 )
             }
             .onErrorResumeNext(Function {

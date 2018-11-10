@@ -28,13 +28,14 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
     fun isReceivingData() = isReceivingDataMutableLiveData
 
     fun receiveTweets(track: String) {
+        var cnt = 0     // TODO remove, debug only
         tweetRepository.getTweetsFlowable(track)
             .doOnSubscribe {
                 isReceivingDataMutableLiveData.postValue(true)
             }
             .subscribe({ tweetEntity: TweetEntity ->
                 if (tweetRepository.receiveData) {
-                    d("tweet created at: ${tweetEntity.createdAt}")
+                    d("tweet cnt: ${++cnt}")
                     addNewTweet(tweetEntity)
                 }
             }, { t: Throwable ->
