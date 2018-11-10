@@ -11,7 +11,7 @@ data class TweetEntity(
     var text: String,
     var user: String,
     var createdAt: String,  // TODO convert to Date
-    var timestamp: String
+    var timestamp: Long = System.currentTimeMillis()
 ) {
     override fun equals(other: Any?): Boolean {
         return if (other is TweetEntity) {

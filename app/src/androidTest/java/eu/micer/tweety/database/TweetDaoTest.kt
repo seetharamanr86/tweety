@@ -55,32 +55,28 @@ class TweetDaoTest : KoinTest {
                 tweetId = 987654,
                 text = "Sample test text #1.",
                 user = "Dave Lister",
-                createdAt = "Fri Nov 09 20:47:39 +0000 2018",
-                timestamp = "1541843586"
+                createdAt = "Fri Nov 09 20:47:39 +0000 2018"
             ),
             TweetEntity(
                 id = 2,
                 tweetId = 987653,
                 text = "Sample test text #2.",
                 user = "Arnold J. Rimmer",
-                createdAt = "Fri Nov 09 20:47:39 +0000 2018",
-                timestamp = "1541843286"
+                createdAt = "Fri Nov 09 20:47:39 +0000 2018"
             ),
             TweetEntity(
                 id = 3,
                 tweetId = 987652,
                 text = "Sample test text #3.",
                 user = "Cat",
-                createdAt = "Fri Nov 09 20:47:39 +0000 2018",
-                timestamp = "1541844586"
+                createdAt = "Fri Nov 09 20:47:39 +0000 2018"
             ),
             TweetEntity(
                 id = 4,
                 tweetId = 987651,
                 text = "Sample test text #4.",
                 user = "Christine",
-                createdAt = "Fri Nov 09 20:47:39 +0000 2018",
-                timestamp = "1541840423"
+                createdAt = "Fri Nov 09 20:47:39 +0000 2018"
             )
         )
     }

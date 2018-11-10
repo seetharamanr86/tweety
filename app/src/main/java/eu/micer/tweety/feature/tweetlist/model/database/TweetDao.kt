@@ -18,6 +18,9 @@ interface TweetDao {
     @Query("DELETE FROM TweetEntity")
     fun deleteAll()
 
+    @Query("DELETE FROM TweetEntity WHERE timestamp < :timestampMin")
+    fun deleteExpired(timestampMin: Long)
+
     @Query("SELECT * FROM TweetEntity WHERE id = :id")
     fun findById(id: Int): Maybe<TweetEntity>
 

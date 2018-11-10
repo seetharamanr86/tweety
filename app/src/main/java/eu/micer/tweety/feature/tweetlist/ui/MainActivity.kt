@@ -44,6 +44,7 @@ class MainActivity : BaseActivity() {
             }
         })
 
+        tweetListViewModel.startClearingTask()
         tweetListViewModel.loadLastData()
     }
 

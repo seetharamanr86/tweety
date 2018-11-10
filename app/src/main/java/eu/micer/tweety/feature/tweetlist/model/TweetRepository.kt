@@ -11,6 +11,7 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Observable
+import io.reactivex.functions.Action
 import io.reactivex.functions.Function
 import io.reactivex.rxkotlin.toFlowable
 import timber.log.Timber
@@ -40,8 +41,7 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
                     tweetId = tweet.id,
                     text = tweet.text,
                     createdAt = tweet.createdAt,
-                    user = tweet.user.name,
-                    timestamp = tweet.timestampMs
+                    user = tweet.user.name
                 )
             }
             .onErrorResumeNext(Function {
@@ -58,5 +58,11 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
 
     fun clearOfflineData(): Maybe<Void> {
         return Maybe.fromAction(tweetDao::deleteAll)
+    }
+
+    fun removeExpiredTweets(timestampMin: Long) : Maybe<Void>{
+        return Maybe.fromAction(Action(fun() {
+            tweetDao.deleteExpired(timestampMin)
+        }))
     }
 }

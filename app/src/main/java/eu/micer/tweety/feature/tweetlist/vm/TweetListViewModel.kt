@@ -6,11 +6,16 @@ import com.github.ajalt.timberkt.Timber.e
 import eu.micer.tweety.base.BaseViewModel
 import eu.micer.tweety.feature.tweetlist.model.TweetRepository
 import eu.micer.tweety.feature.tweetlist.model.database.TweetEntity
+import eu.micer.tweety.util.Constants
 import eu.micer.tweety.util.event.Event1
 import eu.micer.tweety.util.extensions.default
 import eu.micer.tweety.util.extensions.runInBackground
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
+import io.reactivex.schedulers.Schedulers
 import timber.log.Timber.d
+import java.util.concurrent.TimeUnit
 
 
 class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseViewModel() {
@@ -57,6 +62,29 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
             }).addTo(compositeDisposable)
     }
 
+    fun startClearingTask() {
+        Observable.interval(Constants.Tweet.CLEARING_PERIOD_SECONDS, TimeUnit.SECONDS, Schedulers.computation())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe( {
+                d("trying to remove expired tweets")
+                removeExpiredTweets()
+            }, {
+                e(it)
+            })
+            .addTo(compositeDisposable)
+    }
+
+    fun loadLastData() {
+        tweetRepository.getOfflineTweetsFlowable()
+            .runInBackground()
+            .subscribe({
+                it.forEach(this::addNewTweet)
+            }, {
+                e(it)
+            })
+            .addTo(compositeDisposable)
+    }
+
     private fun addNewTweet(tweetEntity: TweetEntity) {
         val list = tweetListLiveData.value ?: ArrayList()
         if (tweetEntity !in list) {
@@ -69,14 +97,27 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
         tweetListLiveData.value = ArrayList()
     }
 
-    fun loadLastData() {
-        tweetRepository.getOfflineTweetsFlowable()
+    private fun removeExpiredTweets() {
+        val timestampMin = getMinimalTimestamp()
+        // remove from database
+        tweetRepository.removeExpiredTweets(timestampMin)
             .runInBackground()
-            .subscribe ({
-                it.forEach(this::addNewTweet)
+            .subscribe({
+                d("expired tweets removed")
             }, {
                 e(it)
-            })
-            .addTo(compositeDisposable)
+            }).addTo(compositeDisposable)
+
+        // remove from LiveData
+        var list = tweetListLiveData.value ?: ArrayList()
+        list = list.filter { tweetEntity ->
+            tweetEntity.timestamp > timestampMin
+        } as ArrayList<TweetEntity>
+        tweetListLiveData.value = list
+    }
+
+    private fun getMinimalTimestamp(): Long {
+        val lifespanMs = TimeUnit.SECONDS.toMillis(Constants.Tweet.LIFESPAN_SECONDS)
+        return System.currentTimeMillis() - lifespanMs
     }
 }
