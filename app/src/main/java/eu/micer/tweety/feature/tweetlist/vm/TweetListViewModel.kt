@@ -57,7 +57,13 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
     }
 
     fun removeExpiredItemsFromList(list: List<TweetEntity>): List<TweetEntity> {
-        return list.filter { it.timestamp > getMinimalTimestamp() }
+        val listFiltered: ArrayList<TweetEntity> = ArrayList()
+        list.filterTo(
+            listFiltered,
+            predicate = { tweetEntity ->
+                tweetEntity.timestamp > getMinimalTimestamp()
+            })
+        return listFiltered
     }
 
     private fun removeExpiredTweets() {
