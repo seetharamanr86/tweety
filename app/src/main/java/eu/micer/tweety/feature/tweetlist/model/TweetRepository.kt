@@ -28,10 +28,10 @@ import java.util.*
 
 class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: TweetDao) {
     private var tweetEntityList: List<TweetEntity> = ArrayList()
-    val receiveData = MutableLiveData<Boolean>().default(false)
+    val receiveRemoteData = MutableLiveData<Boolean>().default(false)
 
     fun getTweetsLiveData(track: String, showErrorEvent: MutableLiveData<Event1<String>>): LiveData<List<TweetEntity>> {
-        receiveData.value = true
+        receiveRemoteData.value = true
         return twitterApi.getTweetsStream(track)
             .flatMapObservable { responseBody ->
                 createJsonReaderObservable(responseBody)
@@ -61,6 +61,7 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
                 }
             }
             .onErrorResumeNext(Function {
+                receiveRemoteData.postValue(false)
                 // return tweets from local database in case of any error
                 d("using local database")
                 tweetDao.getAll()
@@ -104,7 +105,7 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
             JsonReader(responseBody.charStream())
                 .also { it.isLenient = true }
                 .use { reader ->
-                    while (receiveData.value == true && reader.hasNext()) {
+                    while (receiveRemoteData.value == true && reader.hasNext()) {
                         emitter.onNext(Gson().fromJson<Tweet>(reader, Tweet::class.java))
                     }
                     emitter.onComplete()

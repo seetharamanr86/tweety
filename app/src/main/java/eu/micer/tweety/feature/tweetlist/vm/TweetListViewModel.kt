@@ -23,11 +23,11 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
     }
 
     fun isReceivingData(): MutableLiveData<Boolean> {
-        return tweetRepository.receiveData
+        return tweetRepository.receiveRemoteData
     }
 
     fun stopReceivingData() {
-        tweetRepository.receiveData.postValue(false)
+        tweetRepository.receiveRemoteData.postValue(false)
     }
 
     fun clearOfflineTweets() {
