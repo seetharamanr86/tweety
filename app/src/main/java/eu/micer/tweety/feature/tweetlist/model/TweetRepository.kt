@@ -64,7 +64,7 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
                 receiveRemoteData.postValue(false)
                 // return tweets from local database in case of any error
                 d("using local database")
-                tweetDao.getAll()
+                tweetDao.findAll()
             })
             .doOnComplete {
                 d("Receiving tweets has been completed.")
@@ -77,7 +77,7 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
      * Loads data from database.
      */
     fun getOfflineTweetsLiveData(): LiveData<List<TweetEntity>> {
-        return tweetDao.getAllLiveData()
+        return tweetDao.findAllLiveData()
     }
 
     /**

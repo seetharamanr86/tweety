@@ -29,6 +29,29 @@ class TweetDaoTest : KoinTest {
 
     @After
     fun after() {
+        // FIXME failing when more then one test - why?
+//        tweetDatabase.close()
+//        closeKoin()
+    }
+
+    @Test
+    fun testInsert() {
+        val entity = TweetEntity(
+            id = 1,
+            tweetId = 987654,
+            text = "text",
+            user = "user",
+            createdAt = Date()
+        )
+
+        tweetDao.insert(entity)
+        val insertedId = entity.id
+
+        val requestedEntity = tweetDao.findById(insertedId).blockingGet()
+
+        Assert.assertEquals(entity, requestedEntity)
+
+        // FIXME remove when execution in @After is working
         tweetDatabase.close()
         closeKoin()
     }
@@ -38,16 +61,79 @@ class TweetDaoTest : KoinTest {
         val entities = getTweetEntityList()
 
         tweetDao.insertAll(entities)
-        val ids = entities.map { it.id }
 
-        val requestedEntities = ids.map {
-                tweetDao.findById(it).blockingGet()
-        }
+        val requestedEntities = tweetDao.findAllSync()
 
         Assert.assertEquals(entities, requestedEntities)
     }
 
-    // TODO write more tests
+    @Test
+    fun testDelete() {
+        val entity = TweetEntity(
+            id = 100,
+            tweetId = 987654,
+            text = "text",
+            user = "user",
+            createdAt = Date()
+        )
+
+        tweetDao.insert(entity)
+        val insertedId = entity.id
+        tweetDao.delete(entity)
+
+        val requestedEntity = tweetDao.findById(insertedId).blockingGet()
+
+        Assert.assertNull(requestedEntity)
+    }
+
+    @Test
+    fun testDeleteAll() {
+        val entities = getTweetEntityList()
+
+        tweetDao.insertAll(entities)
+
+        tweetDao.deleteAll()
+
+        val requestedEntities = tweetDao.findAllSync()
+
+        Assert.assertTrue(requestedEntities.isEmpty())
+    }
+
+    @Test
+    fun testDeleteExpired() {
+        val entity = TweetEntity(
+            id = 101,
+            tweetId = 987654,
+            text = "text",
+            user = "user",
+            createdAt = Date(),
+            timestamp = 1000L
+        )
+        val entityId = entity.id
+
+        val expiredEntity = TweetEntity(
+            id = 102,
+            tweetId = 987654,
+            text = "text",
+            user = "user",
+            createdAt = Date(),
+            timestamp = 500L
+        )
+        val expiredEntityId = expiredEntity.id
+
+        val timestampMin = 800L
+
+        tweetDao.insert(entity)
+        tweetDao.insert(expiredEntity)
+
+        tweetDao.deleteExpired(timestampMin)
+
+        val ent = tweetDao.findById(entityId).blockingGet()
+        val expiredEnt = tweetDao.findById(expiredEntityId).blockingGet()
+
+        Assert.assertNotNull(ent)
+        Assert.assertNull(expiredEnt)
+    }
 
     private fun getTweetEntityList(): List<TweetEntity> {
         return arrayListOf(

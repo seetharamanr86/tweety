@@ -26,14 +26,11 @@ interface TweetDao {
     fun findById(id: Int): Maybe<TweetEntity>
 
     @Query("SELECT * FROM TweetEntity")
-    fun getAll(): Flowable<List<TweetEntity>>
+    fun findAll(): Flowable<List<TweetEntity>>
 
     @Query("SELECT * FROM TweetEntity")
-    fun getAllMaybe(): Maybe<List<TweetEntity>>
+    fun findAllLiveData(): LiveData<List<TweetEntity>>
 
     @Query("SELECT * FROM TweetEntity")
-    fun getAllLiveData(): LiveData<List<TweetEntity>>
-
-    @Query("SELECT * FROM TweetEntity")
-    fun getAllSync(): List<TweetEntity>
+    fun findAllSync(): List<TweetEntity>
 }
