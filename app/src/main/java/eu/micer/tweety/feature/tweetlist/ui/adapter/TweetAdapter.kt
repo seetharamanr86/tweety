@@ -39,13 +39,18 @@ class TweetAdapter(private var items: List<TweetEntity>, private val context: Co
         this.recyclerView = null
     }
 
-    fun updateItems(tweetList: ArrayList<TweetEntity>) {
+    fun updateItems(tweetList: List<TweetEntity>) {
         val sortedTweetList = tweetList.sortedWith(compareByDescending { it.timestamp })
         items = sortedTweetList
         notifyDataSetChanged()
         if (sortedTweetList.isNotEmpty() && items.isNotEmpty() && sortedTweetList[0] != items[0]) {
             recyclerView?.scrollToPosition(0)
         }
+    }
+
+    fun clearItems() {
+        items = ArrayList()
+        notifyDataSetChanged()
     }
 }
 
