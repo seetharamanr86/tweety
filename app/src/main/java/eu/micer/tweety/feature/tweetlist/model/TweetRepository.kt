@@ -18,6 +18,7 @@ import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.functions.Action
 import io.reactivex.functions.Function
+import io.reactivex.schedulers.Schedulers
 import okhttp3.ResponseBody
 import timber.log.Timber
 import timber.log.Timber.d
@@ -33,10 +34,12 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
     fun getTweetsLiveData(track: String, showErrorEvent: MutableLiveData<Event1<String>>): LiveData<List<TweetEntity>> {
         receiveRemoteData.value = true
         return twitterApi.getTweetsStream(track)
+            .subscribeOn(Schedulers.io())
             .flatMapObservable { responseBody ->
                 createJsonReaderObservable(responseBody)
             }
             .toFlowable(BackpressureStrategy.BUFFER)
+            .runAllOnIoThread()
             .map { tweet: Tweet? ->
                 TweetEntity(
                     tweetId = tweet?.id ?: 0,
@@ -69,7 +72,6 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
             .doOnComplete {
                 d("Receiving tweets has been completed.")
             }
-            .runAllOnIoThread()
             .toLiveData()
     }
 
