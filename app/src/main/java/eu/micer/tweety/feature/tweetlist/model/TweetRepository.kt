@@ -21,9 +21,13 @@ import io.reactivex.functions.Function
 import okhttp3.ResponseBody
 import timber.log.Timber
 import timber.log.Timber.d
+import timber.log.Timber.e
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.*
 
 class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: TweetDao) {
-    var tweetEntityList: List<TweetEntity> = ArrayList()
+    private var tweetEntityList: List<TweetEntity> = ArrayList()
     val receiveData = MutableLiveData<Boolean>().default(false)
 
     fun getTweetsLiveData(track: String, showErrorEvent: MutableLiveData<Event1<String>>): LiveData<List<TweetEntity>> {
@@ -37,7 +41,7 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
                 TweetEntity(
                     tweetId = tweet?.id ?: 0,
                     text = tweet?.text ?: "",
-                    createdAt = tweet?.createdAt ?: "",
+                    createdAt = getDateFromString(tweet?.createdAt),
                     user = tweet?.user?.name ?: ""
                 )
             }
@@ -69,22 +73,6 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
     }
 
     /**
-     * Provides JSON reader to parse incoming stream of data and emit Tweet objects.
-     */
-    private fun createJsonReaderObservable(responseBody: ResponseBody): Observable<Tweet>? {
-        return Observable.create<Tweet> { emitter ->
-            JsonReader(responseBody.charStream())
-                .also { it.isLenient = true }
-                .use { reader ->
-                    while (receiveData.value == true && reader.hasNext()) {
-                        emitter.onNext(Gson().fromJson<Tweet>(reader, Tweet::class.java))
-                    }
-                    emitter.onComplete()
-                }
-        }
-    }
-
-    /**
      * Loads data from database.
      */
     fun getOfflineTweetsLiveData(): LiveData<List<TweetEntity>> {
@@ -106,5 +94,32 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
         return Maybe.fromAction(Action(fun() {
             tweetDao.deleteExpired(timestampMin)
         }))
+    }
+
+    /**
+     * Provides JSON reader to parse incoming stream of data and emit Tweet objects.
+     */
+    private fun createJsonReaderObservable(responseBody: ResponseBody): Observable<Tweet>? {
+        return Observable.create<Tweet> { emitter ->
+            JsonReader(responseBody.charStream())
+                .also { it.isLenient = true }
+                .use { reader ->
+                    while (receiveData.value == true && reader.hasNext()) {
+                        emitter.onNext(Gson().fromJson<Tweet>(reader, Tweet::class.java))
+                    }
+                    emitter.onComplete()
+                }
+        }
+    }
+
+    private fun getDateFromString(datetime: String?): Date? {
+        datetime?.let {
+            try {
+                return SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.getDefault()).parse(datetime)
+            } catch (parseException: ParseException) {
+                e("Could not parse Tweet createdBy: ${parseException.message}")
+            }
+        }
+        return null
     }
 }

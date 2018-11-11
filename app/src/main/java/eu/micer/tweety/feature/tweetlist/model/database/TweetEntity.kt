@@ -2,6 +2,7 @@ package eu.micer.tweety.feature.tweetlist.model.database
 
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
+import java.util.*
 
 @Entity
 data class TweetEntity(
@@ -10,7 +11,7 @@ data class TweetEntity(
     var tweetId: Long,
     var text: String,
     var user: String,
-    var createdAt: String,  // TODO convert to Date
+    var createdAt: Date?,
     var timestamp: Long = System.currentTimeMillis()
 ) {
     override fun equals(other: Any?): Boolean {

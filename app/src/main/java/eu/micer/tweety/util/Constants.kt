@@ -8,6 +8,7 @@ object Constants {
     }
 
     object Tweet {
+        const val DATE_FORMAT_PATTERN = "MMM d, yyyy HH:mm:ss"
         const val CLEARING_PERIOD_SECONDS: Long = 2
         const val LIFESPAN_SECONDS: Long = 30
     }

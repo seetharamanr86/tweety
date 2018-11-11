@@ -9,7 +9,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import eu.micer.tweety.R
 import eu.micer.tweety.feature.tweetlist.model.database.TweetEntity
+import eu.micer.tweety.util.Constants
 import kotlinx.android.synthetic.main.item_tweet.view.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 class TweetAdapter(private var items: List<TweetEntity>, private val context: Context) :
     RecyclerView.Adapter<ViewHolder>() {
@@ -25,7 +28,11 @@ class TweetAdapter(private var items: List<TweetEntity>, private val context: Co
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.tvCreatedAt.text = items[position].createdAt
+        val formattedCreatedByDate = SimpleDateFormat(
+            Constants.Tweet.DATE_FORMAT_PATTERN,
+            Locale.getDefault()
+        ).format(items[position].createdAt)
+        holder.tvCreatedAt.text = formattedCreatedByDate
         holder.tvText.text = items[position].text
         holder.tvUser.text = items[position].user
     }
