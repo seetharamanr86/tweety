@@ -31,20 +31,21 @@ class MainActivity : BaseActivity() {
         setupViews()
 
         // setup LiveData observers
-        tweetListViewModel.tweetList.observe(this, Observer {
-            it?.let { list ->
-                tweetAdapter.updateItems(list)
-            }
-        })
-
         tweetListViewModel.isReceivingData().observe(this, Observer { isReceiving ->
             isReceiving?.let {
                 btn_start_stop.text = getString(if (it) R.string.stop else R.string.track)
             }
         })
 
+        tweetListViewModel.getOfflineTweetsLiveData().observe(this, Observer {
+            it?.let { list ->
+                tweetAdapter.updateItems(list)
+                // no need to keep observing, one-time only
+                tweetListViewModel.getOfflineTweetsLiveData().removeObservers(this)
+            }
+        })
+
         tweetListViewModel.startClearingTask()
-        tweetListViewModel.loadLastData()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -54,10 +55,10 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle item selection
         return when (item.itemId) {
             R.id.clear_all -> {
-                tweetListViewModel.clearAll()
+                tweetListViewModel.clearOfflineTweets()
+                tweetAdapter.clearItems()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -72,9 +73,8 @@ class MainActivity : BaseActivity() {
     private fun setupViews() {
         rv_tweet_list.layoutManager = LinearLayoutManager(this)
 
-        tweetListViewModel.tweetList.value?.let {
-            tweetAdapter = TweetAdapter(it, this)
-        }
+        // init adapter with empty data
+        tweetAdapter = TweetAdapter(ArrayList(), this)
 
         rv_tweet_list.adapter = tweetAdapter
 
@@ -84,7 +84,12 @@ class MainActivity : BaseActivity() {
                 if (et_search_text.text.isNotEmpty()) {
                     view.hideKeyboard()
                     btn_start_stop.text = getString(R.string.stop)
-                    tweetListViewModel.receiveTweets(et_search_text.text.toString().trim())
+                    tweetListViewModel.getTweetsLiveData(et_search_text.text.toString().trim())
+                        .observe(this, Observer {
+                            it?.let { list ->
+                                tweetAdapter.updateItems(list)
+                            }
+                        })
                 }
             } else {
                 // stop receiving tweets

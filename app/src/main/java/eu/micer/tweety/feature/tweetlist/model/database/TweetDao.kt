@@ -1,5 +1,6 @@
 package eu.micer.tweety.feature.tweetlist.model.database
 
+import android.arch.lifecycle.LiveData
 import android.arch.persistence.room.*
 import io.reactivex.Flowable
 import io.reactivex.Maybe
@@ -26,6 +27,12 @@ interface TweetDao {
 
     @Query("SELECT * FROM TweetEntity")
     fun getAll(): Flowable<List<TweetEntity>>
+
+    @Query("SELECT * FROM TweetEntity")
+    fun getAllMaybe(): Maybe<List<TweetEntity>>
+
+    @Query("SELECT * FROM TweetEntity")
+    fun getAllLiveData(): LiveData<List<TweetEntity>>
 
     @Query("SELECT * FROM TweetEntity")
     fun getAllSync(): List<TweetEntity>

@@ -1,39 +1,36 @@
 package eu.micer.tweety.feature.tweetlist.model
 
+import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.stream.JsonReader
 import eu.micer.tweety.feature.tweetlist.model.database.TweetDao
 import eu.micer.tweety.feature.tweetlist.model.database.TweetEntity
 import eu.micer.tweety.network.TwitterApi
 import eu.micer.tweety.network.model.Tweet
+import eu.micer.tweety.util.event.Event1
+import eu.micer.tweety.util.extensions.default
 import eu.micer.tweety.util.extensions.runAllOnIoThread
+import eu.micer.tweety.util.extensions.toLiveData
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.functions.Action
 import io.reactivex.functions.Function
-import io.reactivex.rxkotlin.toFlowable
+import okhttp3.ResponseBody
 import timber.log.Timber
+import timber.log.Timber.d
 
 class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: TweetDao) {
-    var receiveData = false
+    var tweetEntityList: List<TweetEntity> = ArrayList()
+    val receiveData = MutableLiveData<Boolean>().default(false)
 
-    fun getTweetsFlowable(track: String): Flowable<TweetEntity> {
-        receiveData = true
+    fun getTweetsLiveData(track: String, showErrorEvent: MutableLiveData<Event1<String>>): LiveData<List<TweetEntity>> {
+        receiveData.value = true
         return twitterApi.getTweetsStream(track)
             .flatMapObservable { responseBody ->
-                Observable.create<Tweet> { emitter ->
-                    JsonReader(responseBody.charStream())
-                        .also { it.isLenient = true }
-                        .use { reader ->
-                            while (receiveData && reader.hasNext()) {
-                                emitter.onNext(Gson().fromJson<Tweet>(reader, Tweet::class.java))
-                            }
-                            emitter.onComplete()
-                            Timber.d("Receiving tweets has been completed.")
-                        }
-                }
+                createJsonReaderObservable(responseBody)
             }
             .toFlowable(BackpressureStrategy.BUFFER)
             .map { tweet: Tweet? ->
@@ -44,23 +41,67 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
                     user = tweet?.user?.name ?: ""
                 )
             }
+            .filter { tweetEntity: TweetEntity ->
+                // don't show tweets with empty text
+                tweetEntity.text != ""
+            }
+            .doOnNext(tweetDao::insert) // insert every new tweet into database
+            .flatMap { tweetEntity ->
+                (tweetEntityList as ArrayList).add(tweetEntity)
+                Flowable.just(tweetEntityList)
+            }
+            .doOnError {
+                Timber.e(it)
+                it.message?.let { msg ->
+                    showErrorEvent.postValue(Event1(msg))
+                }
+            }
             .onErrorResumeNext(Function {
                 // return tweets from local database in case of any error
-                tweetDao.getAllSync().toFlowable()
+                d("using local database")
+                tweetDao.getAll()
             })
-            .doOnNext(tweetDao::insert) // insert every new tweet into database
+            .doOnComplete {
+                d("Receiving tweets has been completed.")
+            }
             .runAllOnIoThread()
+            .toLiveData()
     }
 
-    fun getOfflineTweetsFlowable(): Flowable<List<TweetEntity>> {
-        return tweetDao.getAll()
+    /**
+     * Provides JSON reader to parse incoming stream of data and emit Tweet objects.
+     */
+    private fun createJsonReaderObservable(responseBody: ResponseBody): Observable<Tweet>? {
+        return Observable.create<Tweet> { emitter ->
+            JsonReader(responseBody.charStream())
+                .also { it.isLenient = true }
+                .use { reader ->
+                    while (receiveData.value == true && reader.hasNext()) {
+                        emitter.onNext(Gson().fromJson<Tweet>(reader, Tweet::class.java))
+                    }
+                    emitter.onComplete()
+                }
+        }
     }
 
-    fun clearOfflineData(): Maybe<Void> {
+    /**
+     * Loads data from database.
+     */
+    fun getOfflineTweetsLiveData(): LiveData<List<TweetEntity>> {
+        return tweetDao.getAllLiveData()
+    }
+
+    /**
+     * Removes all data from database.
+     */
+    fun removeAllTweets(): Maybe<Void> {
         return Maybe.fromAction(tweetDao::deleteAll)
     }
 
-    fun removeExpiredTweets(timestampMin: Long) : Maybe<Void>{
+    /**
+     * Removes expired data from database.
+     */
+    fun removeExpiredTweets(timestampMin: Long): Maybe<Void> {
         return Maybe.fromAction(Action(fun() {
             tweetDao.deleteExpired(timestampMin)
         }))
