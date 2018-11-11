@@ -31,7 +31,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlin"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin"
 
-    // Support
+    // Support libraries
     implementation "com.android.support:multidex:$versions.multidex"
     implementation "com.android.support:design:$versions.support"
     implementation "com.android.support:appcompat-v7:$versions.support"
@@ -42,43 +42,47 @@ dependencies {
     implementation "android.arch.lifecycle:reactivestreams:$versions.arch_lifecycle"
     kapt "android.arch.lifecycle:compiler:$versions.arch_lifecycle"
 
-    // Room database
+    // Room database - wrapper for SQLite database
     implementation "android.arch.persistence.room:rxjava2:$versions.arch_lifecycle"
     implementation "android.arch.persistence.room:runtime:$versions.arch_lifecycle"
     kapt "android.arch.persistence.room:compiler:$versions.arch_lifecycle"
 
-    // RxJava 2
+    // RxJava 2 - reactive way
     implementation "io.reactivex.rxjava2:rxkotlin:$versions.rxkotlin"
     implementation "io.reactivex.rxjava2:rxandroid:$versions.rxandroid"
 
-    // Retrofit 2
+    // Retrofit 2 - HTTP client + converters and adapters
     implementation "com.squareup.retrofit2:retrofit:$versions.retrofit"
-    implementation "com.squareup.retrofit2:converter-gson:$versions.retrofit"
     implementation "com.squareup.retrofit2:adapter-rxjava2:$versions.retrofit"
+    implementation "com.squareup.retrofit2:converter-gson:$versions.retrofit"
     implementation "com.squareup.retrofit2:converter-moshi:$versions.retrofit"
 
-    // OkHttp
+    // OkHttp - lower level HTTP client, needed for Retrofit
     implementation "com.squareup.okhttp3:okhttp:$versions.okhttp"
     implementation "com.squareup.okhttp3:logging-interceptor:$versions.okhttp"
 
-    // SignPost
+    // SignPost - needed to sign requests to Twitter API
     implementation "se.akerfeldt:okhttp-signpost:$versions.okhttp_signpost"
     implementation "oauth.signpost:signpost-core:$versions.signpost_core"
 
-    // Koin
+    // Koin - runtime dependency injection
     implementation "org.koin:koin-android:$versions.koin"
     implementation "org.koin:koin-android-architecture:$versions.koin"
 
-    // Gson
+    // Gson - convert Java objects to JSON and back
     implementation "com.google.code.gson:gson:$versions.gson"
 
-    // Timber
+    // Timber - simplifies logging
     implementation "com.github.ajalt:timberkt:$versions.timberkt"
 
-    // KotPref
+    // KotPref - Shared Preferences helper
     implementation "com.chibatching.kotpref:kotpref:$versions.kotpref"
     implementation "com.chibatching.kotpref:initializer:$versions.kotpref"
     implementation "com.chibatching.kotpref:livedata-support:$versions.kotpref"
+
+    // Leak Canary - detect memory leaks
+    debugImplementation "com.squareup.leakcanary:leakcanary-android:$versions.leakcanary"
+    releaseImplementation "com.squareup.leakcanary:leakcanary-android-no-op:$versions.leakcanary"
 
     // Test
     testImplementation "junit:junit:$versions.junit"
