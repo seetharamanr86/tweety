@@ -95,6 +95,7 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
      * Removes all data from database.
      */
     fun removeAllTweets(): Maybe<Void> {
+        (tweetEntityList as ArrayList).clear()
         return Maybe.fromAction(tweetDao::deleteAll)
     }
 
