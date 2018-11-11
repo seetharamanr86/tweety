@@ -56,16 +56,6 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
         return tweetRepository.getOfflineTweetsLiveData()
     }
 
-    fun removeExpiredItemsFromList(list: List<TweetEntity>): List<TweetEntity> {
-        val listFiltered: ArrayList<TweetEntity> = ArrayList()
-        list.filterTo(
-            listFiltered,
-            predicate = { tweetEntity ->
-                tweetEntity.timestamp > getMinimalTimestamp()
-            })
-        return listFiltered
-    }
-
     private fun removeExpiredTweets() {
         d("trying to remove expired tweets")
         val timestampMin = getMinimalTimestamp()
@@ -81,5 +71,11 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
     private fun getMinimalTimestamp(): Long {
         val lifespanMs = TimeUnit.SECONDS.toMillis(Constants.Tweet.LIFESPAN_SECONDS)
         return System.currentTimeMillis() - lifespanMs
+    }
+
+    fun removeExpiredItemsFromList(list: List<TweetEntity>): List<TweetEntity> {
+        return list.toMutableList().filter {
+            it.timestamp > getMinimalTimestamp()
+        }
     }
 }

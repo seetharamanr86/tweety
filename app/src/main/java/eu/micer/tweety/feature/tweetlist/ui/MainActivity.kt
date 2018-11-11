@@ -87,7 +87,8 @@ class MainActivity : BaseActivity() {
                     tweetListViewModel.getTweetsLiveData(et_search_text.text.toString().trim())
                         .observe(this, Observer {
                             it?.let { list ->
-                                tweetAdapter.updateItems(tweetListViewModel.removeExpiredItemsFromList(list))
+                                val newItems = tweetListViewModel.removeExpiredItemsFromList(list)
+                                tweetAdapter.updateItems(newItems)
                             }
                         })
                 }
