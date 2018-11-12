@@ -1,8 +1,8 @@
-package eu.micer.tweety.model
+package eu.micer.tweety.feature.tweetlist.model
 
 import eu.micer.tweety.feature.tweetlist.model.database.TweetEntity
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 import java.util.*
 
@@ -23,7 +23,7 @@ class TweetEntityUnitTest {
             user = "user1",
             createdAt = Date()
         )
-        assertTrue(tweetEntity1 == tweetEntity2)
+        assertEquals(tweetEntity1, tweetEntity2)
     }
 
     @Test
@@ -42,6 +42,6 @@ class TweetEntityUnitTest {
             user = "user",
             createdAt = Date()
         )
-        assertFalse(tweetEntity1 == tweetEntity2)
+        assertNotEquals(tweetEntity1, tweetEntity2)
     }
 }

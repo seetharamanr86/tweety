@@ -15,7 +15,6 @@ import io.reactivex.schedulers.Schedulers
 import timber.log.Timber.d
 import java.util.concurrent.TimeUnit
 
-
 class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseViewModel() {
 
     fun getTweetsLiveData(track: String): LiveData<List<TweetEntity>> {
@@ -56,6 +55,12 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
         return tweetRepository.getOfflineTweetsLiveData()
     }
 
+    fun removeExpiredItemsFromList(list: List<TweetEntity>): List<TweetEntity> {
+        return list.toMutableList().filter {
+            it.timestamp > getMinimalTimestamp()
+        }
+    }
+
     private fun removeExpiredTweets() {
         d("trying to remove expired tweets")
         val timestampMin = getMinimalTimestamp()
@@ -71,11 +76,5 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
     private fun getMinimalTimestamp(): Long {
         val lifespanMs = TimeUnit.SECONDS.toMillis(Constants.Tweet.LIFESPAN_SECONDS)
         return System.currentTimeMillis() - lifespanMs
-    }
-
-    fun removeExpiredItemsFromList(list: List<TweetEntity>): List<TweetEntity> {
-        return list.toMutableList().filter {
-            it.timestamp > getMinimalTimestamp()
-        }
     }
 }
