@@ -7,14 +7,20 @@ import android.widget.Toast
 
 abstract class BaseActivity : AppCompatActivity() {
 
-    abstract fun getViewModel() : BaseViewModel
+    abstract fun getViewModel(): BaseViewModel
+
+    private var toast: Toast? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         getViewModel().showError.observe(this, Observer {
-            it?.getContentIfNotHandled().let { errorString ->
-                Toast.makeText(this, errorString, Toast.LENGTH_SHORT).show()
+            it?.getContentIfNotHandled()?.let { errorString ->
+                if (errorString.isNotEmpty()) {
+                    toast?.cancel()
+                    toast = Toast.makeText(applicationContext, errorString, Toast.LENGTH_SHORT)
+                    toast?.show()
+                }
             }
         })
     }

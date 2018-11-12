@@ -44,7 +44,6 @@ val networkModule = applicationContext {
             .build() as Retrofit
     }
     bean { RxJava2CallAdapterFactory.create() as retrofit2.CallAdapter.Factory }
-//    bean { GsonBuilder().setDateFormat("EEE MMM dd HH:mm:ss Z yyyy").create() as Gson }
     bean { GsonConverterFactory.create() as retrofit2.Converter.Factory }
     bean {
         OkHttpClient.Builder()

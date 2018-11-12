@@ -20,15 +20,16 @@ import io.reactivex.functions.Action
 import io.reactivex.functions.Function
 import io.reactivex.schedulers.Schedulers
 import okhttp3.ResponseBody
-import timber.log.Timber
 import timber.log.Timber.d
 import timber.log.Timber.e
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: TweetDao) {
     private var tweetEntityList: List<TweetEntity> = ArrayList()
+    private val requestRepeatDelay = 3L
     val receiveRemoteData = MutableLiveData<Boolean>().default(false)
 
     fun getTweetsLiveData(track: String, showErrorEvent: MutableLiveData<Event1<String>>): LiveData<List<TweetEntity>> {
@@ -58,19 +59,26 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
                 Flowable.just(tweetEntityList)
             }
             .doOnError {
-                Timber.e(it)
-                it.message?.let { msg ->
-                    showErrorEvent.postValue(Event1(msg))
-                }
+                e(it)
+                val message = "Error when fetching data:\n\n${it.message}\n\nNext try in $requestRepeatDelay seconds."
+                showErrorEvent.postValue(Event1(message))
             }
             .onErrorResumeNext(Function {
-                receiveRemoteData.postValue(false)
-                // return tweets from local database in case of any error
-                d("using local database")
-                tweetDao.findAll()
+                /**
+                 * Return tweets from local database in case of any error. When using Flowable in Room db DAO, it keeps
+                 * listening to changes and never emits onComplete(). Therefore I'm using Flowable.just(...).
+                 */
+                d("Using data from local database.")
+                Flowable.just(tweetDao.findAllSync())
             })
             .doOnComplete {
                 d("Receiving tweets has been completed.")
+            }
+            .repeatWhen {
+                it.delay(requestRepeatDelay, TimeUnit.SECONDS)
+            }
+            .takeUntil {
+                !(receiveRemoteData.value ?: false)
             }
             .toLiveData()
     }
