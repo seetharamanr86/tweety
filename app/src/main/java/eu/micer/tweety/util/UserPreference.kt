@@ -7,4 +7,6 @@ object UserPreference : KotprefModel() {
     var consumerSecret by stringPref()
     var token by stringPref()
     var tokenSecret by stringPref()
+
+    var lastSearchText by stringPref()
 }

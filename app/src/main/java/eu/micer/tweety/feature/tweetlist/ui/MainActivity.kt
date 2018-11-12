@@ -6,12 +6,15 @@ import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.View
 import eu.micer.tweety.R
 import eu.micer.tweety.base.BaseActivity
 import eu.micer.tweety.base.BaseViewModel
 import eu.micer.tweety.feature.tweetlist.ui.adapter.TweetAdapter
 import eu.micer.tweety.feature.tweetlist.vm.TweetListViewModel
+import eu.micer.tweety.util.UserPreference
 import eu.micer.tweety.util.extensions.hideKeyboard
+import eu.micer.tweety.util.extensions.toEditable
 import kotlinx.android.synthetic.main.activity_main.*
 import org.koin.android.architecture.ext.viewModel
 
@@ -78,25 +81,40 @@ class MainActivity : BaseActivity() {
 
         rv_tweet_list.adapter = tweetAdapter
 
-        btn_start_stop.setOnClickListener { view ->
-            if (btn_start_stop.text == getString(R.string.track)) {
-                // start receiving tweets
-                if (et_search_text.text.isNotEmpty()) {
-                    view.hideKeyboard()
-                    btn_start_stop.text = getString(R.string.stop)
-                    tweetListViewModel.getTweetsLiveData(et_search_text.text.toString().trim())
-                        .observe(this, Observer {
-                            it?.let { list ->
-                                val newItems = tweetListViewModel.removeExpiredItemsFromList(list)
-                                tweetAdapter.updateItems(newItems)
-                            }
-                        })
-                }
-            } else {
-                // stop receiving tweets
-                tweetListViewModel.stopReceivingData()
-                btn_start_stop.text = getString(R.string.track)
+        // retrieve last search text
+        et_search_text.text = UserPreference.lastSearchText.toEditable()
+
+        // Start / Stop button
+        btn_start_stop.setOnClickListener(this::onButtonStartStopClick)
+    }
+
+    private fun onButtonStartStopClick(view: View) {
+        if (btn_start_stop.text == getString(R.string.track)) {
+            // start receiving tweets
+            if (et_search_text.text.isNotEmpty()) {
+                view.hideKeyboard()
+                btn_start_stop.text = getString(R.string.stop)
+                val searchText = getSearchText()
+
+                // save search text to Shared Prefs
+                UserPreference.lastSearchText = searchText
+
+                tweetListViewModel.getTweetsLiveData(searchText)
+                    .observe(this, Observer {
+                        it?.let { list ->
+                            val newItems = tweetListViewModel.removeExpiredItemsFromList(list)
+                            tweetAdapter.updateItems(newItems)
+                        }
+                    })
             }
+        } else {
+            // stop receiving tweets
+            tweetListViewModel.stopReceivingData()
+            btn_start_stop.text = getString(R.string.track)
         }
+    }
+
+    private fun getSearchText(): String {
+        return et_search_text.text.toString().trim()
     }
 }
