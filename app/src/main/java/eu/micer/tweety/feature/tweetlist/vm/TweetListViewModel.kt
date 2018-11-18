@@ -2,6 +2,7 @@ package eu.micer.tweety.feature.tweetlist.vm
 
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
+import android.arch.lifecycle.Transformations
 import com.github.ajalt.timberkt.Timber.e
 import eu.micer.tweety.base.BaseViewModel
 import eu.micer.tweety.feature.tweetlist.model.TweetRepository
@@ -17,8 +18,19 @@ import java.util.concurrent.TimeUnit
 
 class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseViewModel() {
 
-    fun getTweetsLiveData(track: String): LiveData<List<TweetEntity>> {
-        return tweetRepository.getTweetsLiveData(track, showErrorEvent)
+    // Solution with Transformations.switchMap as presented in https://youtu.be/2rO4r-JOQtA.
+    // We should always use Transformations and not passing the reference to one LiveData object to prevent having more
+    // observers to same data - which we don't want in this particular case.
+
+    // String to track, taken from user input
+    private val track = MutableLiveData<String>()
+
+    val tweetsLiveData: LiveData<List<TweetEntity>> = Transformations.switchMap(track) {track ->
+        tweetRepository.getTweetsLiveData(track, showErrorEvent)
+    }
+
+    fun loadTweetsLiveData(userInput: String) {
+        track.value = userInput
     }
 
     fun isReceivingData(): MutableLiveData<Boolean> {
@@ -51,6 +63,10 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
             .addTo(compositeDisposable)
     }
 
+    /**
+     * This is probably wrong as we shouldn't return the reference to LiveData and use Transformations to rather create
+     * a new instance for the view. Source: https://youtu.be/2rO4r-JOQtA.
+     */
     fun getOfflineTweetsLiveData(): LiveData<List<TweetEntity>> {
         return tweetRepository.getOfflineTweetsLiveData()
     }

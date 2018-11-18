@@ -40,6 +40,14 @@ class MainActivity : BaseActivity() {
             }
         })
 
+        tweetListViewModel.tweetsLiveData
+            .observe(this, Observer {
+                it?.let { list ->
+                    val newItems = tweetListViewModel.removeExpiredItemsFromList(list)
+                    tweetAdapter.updateItems(newItems)
+                }
+            })
+
         tweetListViewModel.getOfflineTweetsLiveData().observe(this, Observer {
             it?.let { list ->
                 tweetAdapter.updateItems(list)
@@ -99,13 +107,7 @@ class MainActivity : BaseActivity() {
                 // save search text to Shared Prefs
                 UserPreference.lastSearchText = searchText
 
-                tweetListViewModel.getTweetsLiveData(searchText)
-                    .observe(this, Observer {
-                        it?.let { list ->
-                            val newItems = tweetListViewModel.removeExpiredItemsFromList(list)
-                            tweetAdapter.updateItems(newItems)
-                        }
-                    })
+                tweetListViewModel.loadTweetsLiveData(searchText)
             }
         } else {
             // stop receiving tweets
