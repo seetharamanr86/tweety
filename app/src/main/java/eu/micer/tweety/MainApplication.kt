@@ -1,27 +1,26 @@
 package eu.micer.tweety
 
-import android.support.multidex.MultiDexApplication
+import android.app.Application
 import com.github.ajalt.timberkt.Timber
 import com.github.ajalt.timberkt.Timber.DebugTree
-import com.squareup.leakcanary.LeakCanary
 import eu.micer.tweety.di.allModules
 import eu.micer.tweety.util.UserPreference
-import org.koin.android.ext.android.startKoin
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 
-class MainApplication : MultiDexApplication() {
+class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        if (LeakCanary.isInAnalyzerProcess(this)) {
-            // This process is dedicated to LeakCanary for heap analysis.
-            // You should not init your app in this process.
-            return;
-        }
-        LeakCanary.install(this);
 
         Timber.plant(DebugTree())
 
         // Start Koin
-        startKoin(this, allModules)
+        startKoin {
+            // declare used Android context
+            androidContext(this@MainApplication)
+            // declare modules
+            modules(allModules)
+        }
 
         // Store secret data to SharedPreferences
         UserPreference.consumerKey = getString(R.string.consumer_key)

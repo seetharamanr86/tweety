@@ -1,12 +1,12 @@
 package eu.micer.tweety.feature.tweetlist.ui.adapter
 
 import android.content.Context
-import android.support.v7.util.DiffUtil
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import eu.micer.tweety.R
 import eu.micer.tweety.feature.tweetlist.model.database.TweetEntity
 import eu.micer.tweety.util.Constants
@@ -28,13 +28,17 @@ class TweetAdapter(private var items: List<TweetEntity>, private val context: Co
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val formattedCreatedByDate = SimpleDateFormat(
-            Constants.Tweet.DATE_FORMAT_PATTERN,
-            Locale.getDefault()
-        ).format(items[position].createdAt)
-        holder.tvCreatedAt.text = formattedCreatedByDate
-        holder.tvText.text = items[position].text
-        holder.tvUser.text = items[position].user
+        with(items[position]) {
+            val formattedCreatedByDate = createdAt?.let {
+                SimpleDateFormat(
+                    Constants.Tweet.DATE_FORMAT_PATTERN,
+                    Locale.getDefault()
+                ).format(it)
+            } ?: ""
+            holder.tvCreatedAt.text = formattedCreatedByDate
+            holder.tvText.text = text
+            holder.tvUser.text = user
+        }
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {

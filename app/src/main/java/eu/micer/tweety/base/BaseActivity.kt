@@ -1,9 +1,9 @@
 package eu.micer.tweety.base
 
-import android.arch.lifecycle.Observer
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 
 abstract class BaseActivity : AppCompatActivity() {
 

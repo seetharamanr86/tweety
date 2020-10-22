@@ -7,11 +7,11 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
     defaultConfig {
         applicationId "eu.micer.tweety"
-        minSdkVersion 21
-        targetSdkVersion 28
+        minSdkVersion 24
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -32,20 +32,17 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:$versions.kotlin"
 
     // Support libraries
-    implementation "com.android.support:multidex:$versions.multidex"
-    implementation "com.android.support:design:$versions.support"
-    implementation "com.android.support:appcompat-v7:$versions.support"
-    implementation "com.android.support.constraint:constraint-layout:$versions.constraint_layout"
+    implementation "com.google.android.material:material:$versions.material"
+    implementation "androidx.appcompat:appcompat:$versions.appcompat"
+    implementation "androidx.constraintlayout:constraintlayout:$versions.constraint_layout"
 
     // Architecture Components
-    implementation "android.arch.lifecycle:extensions:$versions.arch_lifecycle"
     implementation "android.arch.lifecycle:reactivestreams:$versions.arch_lifecycle"
-    kapt "android.arch.lifecycle:compiler:$versions.arch_lifecycle"
 
     // Room database - wrapper for SQLite database
-    implementation "android.arch.persistence.room:rxjava2:$versions.arch_lifecycle"
-    implementation "android.arch.persistence.room:runtime:$versions.arch_lifecycle"
-    kapt "android.arch.persistence.room:compiler:$versions.arch_lifecycle"
+    implementation "androidx.room:room-rxjava2:$versions.room"
+    implementation "androidx.room:room-runtime:$versions.room"
+    kapt "androidx.room:room-compiler:$versions.room"
 
     // RxJava 2 - reactive way
     implementation "io.reactivex.rxjava2:rxkotlin:$versions.rxkotlin"
@@ -67,7 +64,8 @@ dependencies {
 
     // Koin - runtime dependency injection
     implementation "org.koin:koin-android:$versions.koin"
-    implementation "org.koin:koin-android-architecture:$versions.koin"
+    implementation "org.koin:koin-androidx-scope:$versions.koin"
+    implementation "org.koin:koin-androidx-viewmodel:$versions.koin"
 
     // Gson - convert Java objects to JSON and back
     implementation "com.google.code.gson:gson:$versions.gson"
@@ -86,7 +84,6 @@ dependencies {
 
     // Test
     testImplementation "junit:junit:$versions.junit"
-    androidTestImplementation "com.android.support.test:runner:$versions.test_runner"
     androidTestImplementation "com.android.support.test.espresso:espresso-core:$versions.espresso"
     androidTestImplementation "org.koin:koin-test:$versions.koin"
 }

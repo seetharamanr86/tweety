@@ -1,7 +1,7 @@
 package eu.micer.tweety.feature.tweetlist.model
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.stream.JsonReader
 import eu.micer.tweety.feature.tweetlist.model.database.TweetDao
@@ -32,7 +32,10 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
     private val requestRepeatDelay = 3L
     val receiveRemoteData = MutableLiveData<Boolean>().default(false)
 
-    fun getTweetsLiveData(track: String, showErrorEvent: MutableLiveData<Event1<String>>): LiveData<List<TweetEntity>> {
+    fun getTweetsLiveData(
+        track: String,
+        showErrorEvent: MutableLiveData<Event1<String>>
+    ): LiveData<List<TweetEntity>> {
         receiveRemoteData.value = true
         return twitterApi.getTweetsStream(track)
             .subscribeOn(Schedulers.io())
@@ -45,7 +48,7 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
                 TweetEntity(
                     tweetId = tweet?.id ?: 0,
                     text = tweet?.text ?: "",
-                    createdAt = getDateFromString(tweet?.createdAt),
+                    createdAt = getDateFromString(tweet?.createdAt ?: ""),
                     user = tweet?.user?.name ?: ""
                 )
             }
@@ -60,7 +63,8 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
             }
             .doOnError {
                 e(it)
-                val message = "Error when fetching data:\n\n${it.message}\n\nNext try in $requestRepeatDelay seconds."
+                val message =
+                    "Error when fetching data:\n\n${it.message}\n\nNext try in $requestRepeatDelay seconds."
                 showErrorEvent.postValue(Event1(message))
             }
             .onErrorResumeNext(Function {
@@ -111,26 +115,26 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
      * Provides JSON reader to parse incoming stream of data and emit Tweet objects.
      */
     private fun createJsonReaderObservable(responseBody: ResponseBody): Observable<Tweet>? {
-        return Observable.create<Tweet> { emitter ->
+        return Observable.create { emitter ->
             JsonReader(responseBody.charStream())
                 .also { it.isLenient = true }
                 .use { reader ->
                     while (receiveRemoteData.value == true && reader.hasNext()) {
-                        emitter.onNext(Gson().fromJson<Tweet>(reader, Tweet::class.java))
+                        emitter.onNext(Gson().fromJson(reader, Tweet::class.java))
                     }
                     emitter.onComplete()
                 }
         }
     }
 
-    private fun getDateFromString(datetime: String?): Date? {
-        datetime?.let {
-            try {
-                return SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.getDefault()).parse(datetime)
-            } catch (parseException: ParseException) {
-                e("Could not parse Tweet createdBy: ${parseException.message}")
-            }
+    private fun getDateFromString(datetime: String): Date? {
+        return try {
+            SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.getDefault()).parse(
+                datetime
+            )
+        } catch (parseException: ParseException) {
+            e("Could not parse Tweet createdBy: ${parseException.message}")
+            null
         }
-        return null
     }
 }

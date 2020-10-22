@@ -1,8 +1,8 @@
 package eu.micer.tweety.feature.tweetlist.vm
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.Transformations
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import com.github.ajalt.timberkt.Timber.e
 import eu.micer.tweety.base.BaseViewModel
 import eu.micer.tweety.feature.tweetlist.model.TweetRepository
@@ -25,7 +25,7 @@ class TweetListViewModel(private val tweetRepository: TweetRepository) : BaseVie
     // String to track, taken from user input
     private val track = MutableLiveData<String>()
 
-    val tweetsLiveData: LiveData<List<TweetEntity>> = Transformations.switchMap(track) {track ->
+    val tweetsLiveData: LiveData<List<TweetEntity>> = Transformations.switchMap(track) { track ->
         tweetRepository.getTweetsLiveData(track, showErrorEvent)
     }
 

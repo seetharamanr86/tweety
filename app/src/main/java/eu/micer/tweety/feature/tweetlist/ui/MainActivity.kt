@@ -1,12 +1,12 @@
 package eu.micer.tweety.feature.tweetlist.ui
 
-import android.arch.lifecycle.Observer
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
 import eu.micer.tweety.R
 import eu.micer.tweety.base.BaseActivity
 import eu.micer.tweety.base.BaseViewModel
@@ -16,7 +16,7 @@ import eu.micer.tweety.util.UserPreference
 import eu.micer.tweety.util.extensions.hideKeyboard
 import eu.micer.tweety.util.extensions.toEditable
 import kotlinx.android.synthetic.main.activity_main.*
-import org.koin.android.architecture.ext.viewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : BaseActivity() {
 

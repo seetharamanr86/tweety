@@ -1,6 +1,6 @@
 package eu.micer.tweety.database
 
-import android.support.test.runner.AndroidJUnit4
+import androidx.test.runner.AndroidJUnit4
 import eu.micer.tweety.di.roomTestModule
 import eu.micer.tweety.feature.tweetlist.model.database.TweetDao
 import eu.micer.tweety.feature.tweetlist.model.database.TweetDatabase
@@ -10,10 +10,9 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.koin.standalone.StandAloneContext.closeKoin
-import org.koin.standalone.StandAloneContext.loadKoinModules
-import org.koin.standalone.inject
+import org.koin.core.context.loadKoinModules
 import org.koin.test.KoinTest
+import org.koin.test.inject
 import java.util.*
 
 @RunWith(AndroidJUnit4::class)
@@ -31,7 +30,6 @@ class TweetDaoTest : KoinTest {
     fun after() {
         // FIXME failing when more then one test - why?
 //        tweetDatabase.close()
-//        closeKoin()
     }
 
     @Test
@@ -53,7 +51,6 @@ class TweetDaoTest : KoinTest {
 
         // FIXME remove when execution in @After is working
         tweetDatabase.close()
-        closeKoin()
     }
 
     @Test
