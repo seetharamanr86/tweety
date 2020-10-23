@@ -5,7 +5,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import eu.micer.tweety.R
 import eu.micer.tweety.presentation.base.BaseActivity
@@ -33,21 +32,23 @@ class MainActivity : BaseActivity() {
         setupViews()
 
         // setup LiveData observers
-        tweetListViewModel.isReceivingData().observe(this, Observer { isReceiving ->
+        tweetListViewModel.isReceivingData().observe(this, { isReceiving ->
+            // needed for cases when ie. receiving, putting app to background and back
             isReceiving?.let {
-                btn_start_stop.text = getString(if (it) R.string.stop else R.string.track)
+                if (it) anim_start_stop.showSecond()
+                else anim_start_stop.showFirst()
             }
         })
 
         tweetListViewModel.tweetsLiveData
-            .observe(this, Observer {
+            .observe(this, {
                 it?.let { list ->
                     val newItems = tweetListViewModel.removeExpiredItemsFromList(list)
                     tweetAdapter.updateItems(newItems)
                 }
             })
 
-        tweetListViewModel.getOfflineTweetsLiveData().observe(this, Observer {
+        tweetListViewModel.getOfflineTweetsLiveData().observe(this, {
             it?.let { list ->
                 tweetAdapter.updateItems(list)
                 // no need to keep observing, one-time only
@@ -92,15 +93,19 @@ class MainActivity : BaseActivity() {
         et_search_text.text = UserPreference.lastSearchText.toEditable()
 
         // Start / Stop button
-        btn_start_stop.setOnClickListener(this::onButtonStartStopClick)
+        anim_start_stop.setOnClickListener(this::onButtonStartStopClick)
     }
 
     private fun onButtonStartStopClick(view: View) {
-        if (btn_start_stop.text == getString(R.string.track)) {
+        if (tweetListViewModel.isReceivingData().value == true) {
+            // stop receiving tweets
+            tweetListViewModel.stopReceivingData()
+            anim_start_stop.morph()
+        } else {
             // start receiving tweets
             if (et_search_text.text.isNotEmpty()) {
                 view.hideKeyboard()
-                btn_start_stop.text = getString(R.string.stop)
+                anim_start_stop.morph()
                 val searchText = getSearchText()
 
                 // save search text to Shared Prefs
@@ -108,10 +113,6 @@ class MainActivity : BaseActivity() {
 
                 tweetListViewModel.loadTweetsLiveData(searchText)
             }
-        } else {
-            // stop receiving tweets
-            tweetListViewModel.stopReceivingData()
-            btn_start_stop.text = getString(R.string.track)
         }
     }
 

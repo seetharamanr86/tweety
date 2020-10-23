@@ -25,19 +25,20 @@
         android:layout_marginEnd="8dp"
         android:inputType="text"
         android:maxLength="@integer/et_search_text_max_length"
-        app:layout_constraintEnd_toStartOf="@+id/btn_start_stop"
+        app:layout_constraintEnd_toStartOf="@+id/anim_start_stop"
         app:layout_constraintStart_toEndOf="@+id/textView"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Apple" />
 
-    <Button
-        android:id="@+id/btn_start_stop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <eu.micer.tweety.presentation.ui.custom.AnimatedImageView
+        android:id="@+id/anim_start_stop"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_marginEnd="8dp"
-        android:background="@color/colorPrimary"
-        android:textColor="@android:color/white"
-        tools:text="@string/stop"
+        app:avdFirst="@drawable/avd_play_to_stop"
+        app:avdSecond="@drawable/avd_stop_to_play"
+        android:scaleType="fitXY"
+        android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="@+id/et_search_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/et_search_text" />
