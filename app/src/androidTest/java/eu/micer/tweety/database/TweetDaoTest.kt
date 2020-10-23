@@ -1,10 +1,10 @@
 package eu.micer.tweety.database
 
 import androidx.test.runner.AndroidJUnit4
-import eu.micer.tweety.di.roomTestModule
-import eu.micer.tweety.feature.tweetlist.model.database.TweetDao
-import eu.micer.tweety.feature.tweetlist.model.database.TweetDatabase
-import eu.micer.tweety.feature.tweetlist.model.database.TweetEntity
+import eu.micer.tweety.app.di.roomTestModule
+import eu.micer.tweety.data.local.dao.TweetDao
+import eu.micer.tweety.data.local.database.TweetDatabase
+import eu.micer.tweety.data.local.entity.TweetEntity
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before

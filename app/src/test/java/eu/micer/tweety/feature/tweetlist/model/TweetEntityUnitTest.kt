@@ -1,6 +1,6 @@
 package eu.micer.tweety.feature.tweetlist.model
 
-import eu.micer.tweety.feature.tweetlist.model.database.TweetEntity
+import eu.micer.tweety.data.local.entity.TweetEntity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
