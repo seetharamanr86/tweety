@@ -38,6 +38,7 @@ class TweetListActionProcessorHolder(private val tweetRepository: TweetRepositor
                         .startWith(0L)
                         .doOnNext {
                             removeExpiredTweets()
+                            // TODO update UI when something was removed
                         }
                         .flatMap {
                             // no need to return any result

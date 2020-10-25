@@ -19,6 +19,8 @@ import eu.micer.tweety.presentation.util.extensions.toEditable
 import eu.micer.tweety.presentation.viewstate.TweetListViewState
 import eu.micer.tweety.presentation.vm.TweetListViewModel
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.addTo
 import io.reactivex.subjects.PublishSubject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -82,7 +84,10 @@ class MainActivity : BaseActivity<TweetListIntent, TweetListViewState>() {
     }
 
     private fun bind() {
-        disposables.add(getViewModel().states().subscribe(this::render))
+        getViewModel().states()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(this::render)
+            .addTo(disposables)
 
         getViewModel().processIntents(intents())
     }
