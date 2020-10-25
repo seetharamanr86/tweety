@@ -37,9 +37,13 @@ class MainActivity : BaseActivity() {
         tweetListViewModel.isReceivingData().observe(this, { isReceiving ->
             // needed for cases when ie. receiving, putting app to background and back
             isReceiving?.let {
-                if (it) binding.animStartStop.showSecond()
-                else binding.animStartStop.showFirst()
+                if (it) {
+                    binding.animStartStop.showSecond()
+                } else {
+                    binding.animStartStop.showFirst()
+                }
             }
+            binding.etSearchText.isEnabled = !isReceiving
         })
 
         tweetListViewModel.tweetsLiveData
