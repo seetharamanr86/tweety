@@ -1,33 +1,31 @@
 package eu.micer.tweety.presentation.ui
 
-import android.content.Context
-import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import eu.micer.tweety.R
+import eu.micer.tweety.databinding.ItemTweetBinding
 import eu.micer.tweety.domain.model.Tweet
+import eu.micer.tweety.presentation.base.ViewBindingVH
 import eu.micer.tweety.presentation.util.Constants
-import kotlinx.android.synthetic.main.item_tweet.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-class TweetAdapter(private var items: List<Tweet>, private val context: Context) :
-    RecyclerView.Adapter<ViewHolder>() {
+class TweetAdapter(private var items: List<Tweet>) :
+    RecyclerView.Adapter<ViewBindingVH>() {
 
     private var recyclerView: RecyclerView? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_tweet, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBindingVH {
+        return ViewBindingVH.createVH(parent, ItemTweetBinding::inflate)
     }
 
     override fun getItemCount(): Int {
         return items.size
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewBindingVH, position: Int) {
+        val binding = holder.binding as ItemTweetBinding
+
         with(items[position]) {
             val formattedCreatedByDate = createdAt?.let {
                 SimpleDateFormat(
@@ -35,9 +33,12 @@ class TweetAdapter(private var items: List<Tweet>, private val context: Context)
                     Locale.getDefault()
                 ).format(it)
             } ?: ""
-            holder.tvCreatedAt.text = formattedCreatedByDate
-            holder.tvText.text = text
-            holder.tvUser.text = user
+
+            binding.let {
+                it.tvCreatedAt.text = formattedCreatedByDate
+                it.tvText.text = text
+                it.tvUser.text = user
+            }
         }
     }
 
@@ -74,12 +75,6 @@ class TweetAdapter(private var items: List<Tweet>, private val context: Context)
         items = ArrayList()
         notifyDataSetChanged()
     }
-}
-
-class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    val tvCreatedAt: TextView = view.tv_created_at
-    val tvText: TextView = view.tv_text
-    val tvUser: TextView = view.tv_user
 }
 
 class PostDiffCallback(private val oldTweets: List<Tweet>, private val newTweets: List<Tweet>) :

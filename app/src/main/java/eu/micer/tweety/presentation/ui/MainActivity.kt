@@ -7,18 +7,19 @@ import android.view.MenuItem
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import eu.micer.tweety.R
+import eu.micer.tweety.databinding.ActivityMainBinding
 import eu.micer.tweety.presentation.base.BaseActivity
 import eu.micer.tweety.presentation.base.BaseViewModel
 import eu.micer.tweety.presentation.util.UserPreference
 import eu.micer.tweety.presentation.util.extensions.hideKeyboard
 import eu.micer.tweety.presentation.util.extensions.toEditable
 import eu.micer.tweety.presentation.vm.TweetListViewModel
-import kotlinx.android.synthetic.main.activity_main.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : BaseActivity() {
 
     private val tweetListViewModel: TweetListViewModel by viewModel()
+    private lateinit var binding: ActivityMainBinding
     private lateinit var tweetAdapter: TweetAdapter
 
     override fun getViewModel(): BaseViewModel {
@@ -27,7 +28,8 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         setupViews()
 
@@ -35,8 +37,8 @@ class MainActivity : BaseActivity() {
         tweetListViewModel.isReceivingData().observe(this, { isReceiving ->
             // needed for cases when ie. receiving, putting app to background and back
             isReceiving?.let {
-                if (it) anim_start_stop.showSecond()
-                else anim_start_stop.showFirst()
+                if (it) binding.animStartStop.showSecond()
+                else binding.animStartStop.showFirst()
             }
         })
 
@@ -82,41 +84,45 @@ class MainActivity : BaseActivity() {
     }
 
     private fun setupViews() {
-        rv_tweet_list.layoutManager = LinearLayoutManager(this)
+        with(binding) {
+            rvTweetList.layoutManager = LinearLayoutManager(this@MainActivity)
 
-        // init adapter with empty data
-        tweetAdapter = TweetAdapter(ArrayList(), this)
+            // init adapter with empty data
+            tweetAdapter = TweetAdapter(ArrayList())
 
-        rv_tweet_list.adapter = tweetAdapter
+            rvTweetList.adapter = tweetAdapter
 
-        // retrieve last search text
-        et_search_text.text = UserPreference.lastSearchText.toEditable()
+            // retrieve last search text
+            etSearchText.text = UserPreference.lastSearchText.toEditable()
 
-        // Start / Stop button
-        anim_start_stop.setOnClickListener(this::onButtonStartStopClick)
+            // Start / Stop button
+            animStartStop.setOnClickListener(this@MainActivity::onButtonStartStopClick)
+        }
     }
 
     private fun onButtonStartStopClick(view: View) {
-        if (tweetListViewModel.isReceivingData().value == true) {
-            // stop receiving tweets
-            tweetListViewModel.stopReceivingData()
-            anim_start_stop.morph()
-        } else {
-            // start receiving tweets
-            if (et_search_text.text.isNotEmpty()) {
-                view.hideKeyboard()
-                anim_start_stop.morph()
-                val searchText = getSearchText()
+        with(binding) {
+            if (tweetListViewModel.isReceivingData().value == true) {
+                // stop receiving tweets
+                tweetListViewModel.stopReceivingData()
+                animStartStop.morph()
+            } else {
+                // start receiving tweets
+                if (etSearchText.text.isNotEmpty()) {
+                    view.hideKeyboard()
+                    animStartStop.morph()
+                    val searchText = getSearchText()
 
-                // save search text to Shared Prefs
-                UserPreference.lastSearchText = searchText
+                    // save search text to Shared Prefs
+                    UserPreference.lastSearchText = searchText
 
-                tweetListViewModel.loadTweetsLiveData(searchText)
+                    tweetListViewModel.loadTweetsLiveData(searchText)
+                }
             }
         }
     }
 
     private fun getSearchText(): String {
-        return et_search_text.text.toString().trim()
+        return binding.etSearchText.text.toString().trim()
     }
 }
