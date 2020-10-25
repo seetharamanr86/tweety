@@ -6,6 +6,7 @@ import eu.micer.tweety.presentation.base.MviResult
 sealed class TweetListResult : MviResult {
 
     data class ErrorResult(val throwable: Throwable) : TweetListResult()
+    data class ErrorMessageResult(val message: String) : TweetListResult()
 
     sealed class GetOfflineDataResult : TweetListResult() {
         data class Success(val tweetList: List<Tweet>) : GetOfflineDataResult()
@@ -15,5 +16,11 @@ sealed class TweetListResult : MviResult {
     sealed class TrackingResult : TweetListResult() {
         data class Success(val tweetList: List<Tweet>) : TrackingResult()
         data class Failure(val error: Throwable) : TrackingResult()
+        object InFlight : TrackingResult()
+    }
+
+    sealed class StopTrackingResult : TweetListResult() {
+        object Success : StopTrackingResult()
+        data class Failure(val error: Throwable) : StopTrackingResult()
     }
 }

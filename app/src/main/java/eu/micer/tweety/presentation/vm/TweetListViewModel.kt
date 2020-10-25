@@ -105,11 +105,16 @@ class TweetListViewModel(private val actionProcessorHolder: TweetListActionProce
             BiFunction { previousState: TweetListViewState, result: TweetListResult ->
                 when (result) {
                     is TweetListResult.ErrorResult -> processError(result.throwable, previousState)
+                    is TweetListResult.ErrorMessageResult -> previousState.copy(
+                        isReceivingTweets = false,
+                        errorMessage = result.message
+                    )
                     is TweetListResult.GetOfflineDataResult ->
                         when (result) {
                             is TweetListResult.GetOfflineDataResult.Success ->
                                 previousState.copy(
-                                    tweetList = result.tweetList
+                                    tweetList = result.tweetList,
+                                    errorMessage = ""
                                 )
                             is TweetListResult.GetOfflineDataResult.Failure ->
                                 processError(result.error, previousState)
@@ -118,9 +123,24 @@ class TweetListViewModel(private val actionProcessorHolder: TweetListActionProce
                         when (result) {
                             is TweetListResult.TrackingResult.Success ->
                                 previousState.copy(
-                                    tweetList = result.tweetList
+                                    tweetList = result.tweetList,
+                                    errorMessage = ""
                                 )
                             is TweetListResult.TrackingResult.Failure ->
+                                processError(result.error, previousState)
+                            TweetListResult.TrackingResult.InFlight -> previousState.copy(
+                                isReceivingTweets = true,
+                                errorMessage = ""
+                            )
+                        }
+                    is TweetListResult.StopTrackingResult ->
+                        when (result) {
+                            is TweetListResult.StopTrackingResult.Success ->
+                                previousState.copy(
+                                    isReceivingTweets = false,
+                                    errorMessage = ""
+                                )
+                            is TweetListResult.StopTrackingResult.Failure ->
                                 processError(result.error, previousState)
                         }
                 }

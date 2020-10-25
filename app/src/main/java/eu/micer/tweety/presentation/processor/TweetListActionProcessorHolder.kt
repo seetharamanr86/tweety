@@ -1,19 +1,34 @@
 package eu.micer.tweety.presentation.processor
 
-import com.github.ajalt.timberkt.e
+import com.google.gson.Gson
+import com.google.gson.stream.JsonReader
+import eu.micer.tweety.data.local.entity.TweetEntity
+import eu.micer.tweety.data.local.entity.mapToDomainModel
+import eu.micer.tweety.domain.model.Tweet
 import eu.micer.tweety.domain.repository.TweetRepository
 import eu.micer.tweety.presentation.action.TweetListAction
 import eu.micer.tweety.presentation.result.TweetListResult
 import eu.micer.tweety.presentation.util.Constants
 import eu.micer.tweety.presentation.util.extensions.runAllOnIoThread
+import io.reactivex.BackpressureStrategy
+import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.ObservableTransformer
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.functions.Function
 import io.reactivex.schedulers.Schedulers
+import okhttp3.ResponseBody
 import timber.log.Timber
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class TweetListActionProcessorHolder(private val tweetRepository: TweetRepository) {
+
+    private var tweetEntityList: List<TweetEntity> = ArrayList()
+    private val requestRepeatDelay = 3L
+    var receiveRemoteData = false
 
     private val startClearingTaskProcessor =
         ObservableTransformer<TweetListAction.StartCleaningTaskAction, TweetListResult> { actions ->
@@ -21,14 +36,14 @@ class TweetListActionProcessorHolder(private val tweetRepository: TweetRepositor
                     Observable.interval(Constants.Tweet.CLEARING_PERIOD_SECONDS, TimeUnit.SECONDS, Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .startWith(0L)
-                        .subscribe({
+                        .doOnNext {
                             removeExpiredTweets()
-                        }, {
-                            e(it)
-                        })
-
-                // no need to change the UI state
-                Observable.empty()
+                        }
+                        .flatMap {
+                            // no need to return any result
+                            Observable.empty<TweetListResult>()
+                        }
+                        .onErrorReturn(TweetListResult::ErrorResult)
             }
         }
 
@@ -47,22 +62,22 @@ class TweetListActionProcessorHolder(private val tweetRepository: TweetRepositor
     private val startTrackingProcessor =
         ObservableTransformer<TweetListAction.StartTrackingAction, TweetListResult.TrackingResult> { actions ->
             actions.flatMap {
-                tweetRepository.getTweetsObservable(it.searchText)
+                getTweetsObservable(it.searchText)
                     .runAllOnIoThread()
                     .toObservable()
                     .map(TweetListResult.TrackingResult::Success)
                     .cast(TweetListResult.TrackingResult::class.java)
                     .onErrorReturn(TweetListResult.TrackingResult::Failure)
+                    .startWith(TweetListResult.TrackingResult.InFlight)
             }
         }
 
     private val stopTrackingProcessor =
         ObservableTransformer<TweetListAction.StopTrackingAction, TweetListResult> { actions ->
             actions.flatMap {
-                tweetRepository.receiveRemoteData = false
+                receiveRemoteData = false
 
-                // no need to change the UI state
-                Observable.empty()
+                Observable.just(TweetListResult.StopTrackingResult.Success)
             }
         }
 
@@ -71,6 +86,10 @@ class TweetListActionProcessorHolder(private val tweetRepository: TweetRepositor
             actions.flatMap {
                 tweetRepository.removeAllTweets()
                     .runAllOnIoThread()
+                    .map {
+                        (tweetEntityList as ArrayList).clear()
+                        it
+                    }
                     .subscribe()
 
                 // no need to change the UI state
@@ -140,5 +159,86 @@ class TweetListActionProcessorHolder(private val tweetRepository: TweetRepositor
     private fun getMinimalTimestamp(): Long {
         val lifespanMs = TimeUnit.SECONDS.toMillis(Constants.Tweet.LIFESPAN_SECONDS)
         return System.currentTimeMillis() - lifespanMs
+    }
+
+    private fun getTweetsObservable(
+        track: String
+    ): Flowable<List<Tweet>> {
+        receiveRemoteData = true
+        return tweetRepository.getTweetsStream(track)
+            .subscribeOn(Schedulers.io())
+            .flatMapObservable { responseBody ->
+                createJsonReaderObservable(responseBody)
+            }
+            .toFlowable(BackpressureStrategy.BUFFER)
+            .runAllOnIoThread()
+            .map { tweet: eu.micer.tweety.data.remote.model.Tweet? ->
+                TweetEntity(
+                    tweetId = tweet?.id ?: 0,
+                    text = tweet?.text ?: "",
+                    createdAt = getDateFromString(tweet?.createdAt ?: ""),
+                    user = tweet?.user?.name ?: ""
+                )
+            }
+            .filter { tweetEntity: TweetEntity ->
+                // don't show tweets with empty text
+                tweetEntity.text != ""
+            }
+            .doOnNext(tweetRepository::saveTweet) // insert every new tweet into database
+            .flatMap { tweetEntity ->
+                (tweetEntityList as ArrayList).add(tweetEntity)
+                Flowable.just(tweetEntityList)
+            }
+            .doOnError {
+                Timber.e(it)
+                val message =
+                    "Error when fetching data:\n\n${it.message}\n\nNext try in $requestRepeatDelay seconds."
+                Observable.just(TweetListResult.ErrorMessageResult(message))
+            }
+            .onErrorResumeNext(Function {
+                /**
+                 * Return tweets from local database in case of any error. When using Flowable in Room db DAO, it keeps
+                 * listening to changes and never emits onComplete(). Therefore I'm using Flowable.just(...).
+                 */
+                Timber.d("Using data from local database.")
+                Flowable.just(tweetRepository.getOfflineDataSync())
+            })
+            .doOnComplete {
+                Timber.d("Receiving tweets has been completed.")
+            }
+            .repeatWhen {
+                it.delay(requestRepeatDelay, TimeUnit.SECONDS)
+            }
+            .takeUntil {
+                !receiveRemoteData
+            }
+            .map { it.mapToDomainModel() }
+    }
+
+    /**
+     * Provides JSON reader to parse incoming stream of data and emit Tweet objects.
+     */
+    private fun createJsonReaderObservable(responseBody: ResponseBody): Observable<eu.micer.tweety.data.remote.model.Tweet>? {
+        return Observable.create { emitter ->
+            JsonReader(responseBody.charStream())
+                .also { it.isLenient = true }
+                .use { reader ->
+                    while (receiveRemoteData && reader.hasNext()) {
+                        emitter.onNext(Gson().fromJson(reader, eu.micer.tweety.data.remote.model.Tweet::class.java))
+                    }
+                    emitter.onComplete()
+                }
+        }
+    }
+
+    private fun getDateFromString(datetime: String): Date? {
+        return try {
+            SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.getDefault()).parse(
+                datetime
+            )
+        } catch (parseException: ParseException) {
+            Timber.e("Could not parse Tweet createdBy: ${parseException.message}")
+            null
+        }
     }
 }
