@@ -5,25 +5,25 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import eu.micer.tweety.databinding.ItemTweetBinding
 import eu.micer.tweety.domain.model.Tweet
-import eu.micer.tweety.presentation.base.ViewBindingVH
+import eu.micer.tweety.presentation.base.BaseViewHolder
 import eu.micer.tweety.presentation.util.Constants
 import java.text.SimpleDateFormat
 import java.util.*
 
 class TweetAdapter(private var items: List<Tweet>) :
-    RecyclerView.Adapter<ViewBindingVH>() {
+    RecyclerView.Adapter<BaseViewHolder>() {
 
     private var recyclerView: RecyclerView? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewBindingVH {
-        return ViewBindingVH.createVH(parent, ItemTweetBinding::inflate)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
+        return BaseViewHolder.createVH(parent, ItemTweetBinding::inflate)
     }
 
     override fun getItemCount(): Int {
         return items.size
     }
 
-    override fun onBindViewHolder(holder: ViewBindingVH, position: Int) {
+    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         val binding = holder.binding as ItemTweetBinding
 
         with(items[position]) {
