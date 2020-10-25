@@ -1,8 +1,5 @@
 package eu.micer.tweety.domain.repository
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import com.google.gson.Gson
 import com.google.gson.stream.JsonReader
 import eu.micer.tweety.data.local.dao.TweetDao
@@ -10,10 +7,7 @@ import eu.micer.tweety.data.local.entity.TweetEntity
 import eu.micer.tweety.data.local.entity.mapToDomainModel
 import eu.micer.tweety.data.remote.api.TwitterApi
 import eu.micer.tweety.domain.model.Tweet
-import eu.micer.tweety.presentation.util.event.Event1
-import eu.micer.tweety.presentation.util.extensions.default
 import eu.micer.tweety.presentation.util.extensions.runAllOnIoThread
-import eu.micer.tweety.presentation.util.extensions.toLiveData
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Maybe
@@ -33,13 +27,13 @@ import eu.micer.tweety.data.remote.model.Tweet as TweetRemote
 class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: TweetDao) {
     private var tweetEntityList: List<TweetEntity> = ArrayList()
     private val requestRepeatDelay = 3L
-    val receiveRemoteData = MutableLiveData<Boolean>().default(false)
+    var receiveRemoteData = false
 
-    fun getTweetsLiveData(
-        track: String,
-        showErrorEvent: MutableLiveData<Event1<String>>
-    ): LiveData<List<Tweet>> {
-        receiveRemoteData.value = true
+    // TODO this all should be in TweetListActionProcessorHolder!
+    fun getTweetsObservable(
+        track: String
+    ): Flowable<List<Tweet>> {
+        receiveRemoteData = true
         return twitterApi.getTweetsStream(track)
             .subscribeOn(Schedulers.io())
             .flatMapObservable { responseBody ->
@@ -68,7 +62,8 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
                 e(it)
                 val message =
                     "Error when fetching data:\n\n${it.message}\n\nNext try in $requestRepeatDelay seconds."
-                showErrorEvent.postValue(Event1(message))
+//                showErrorEvent.postValue(Event1(message))
+                // TODO show error message
             }
             .onErrorResumeNext(Function {
                 /**
@@ -85,17 +80,16 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
                 it.delay(requestRepeatDelay, TimeUnit.SECONDS)
             }
             .takeUntil {
-                !(receiveRemoteData.value ?: false)
+                !receiveRemoteData
             }
             .map { it.mapToDomainModel() }
-            .toLiveData()
     }
 
     /**
      * Loads data from database.
      */
-    fun getOfflineTweetsLiveData(): LiveData<List<Tweet>> {
-        return Transformations.map(tweetDao.findAllLiveData()) {
+    fun getOfflineData(): Maybe<List<Tweet>> {
+        return tweetDao.findAll().map {
             it.mapToDomainModel()
         }
     }
@@ -125,7 +119,7 @@ class TweetRepository(private val twitterApi: TwitterApi, private val tweetDao: 
             JsonReader(responseBody.charStream())
                 .also { it.isLenient = true }
                 .use { reader ->
-                    while (receiveRemoteData.value == true && reader.hasNext()) {
+                    while (receiveRemoteData && reader.hasNext()) {
                         emitter.onNext(Gson().fromJson(reader, TweetRemote::class.java))
                     }
                     emitter.onComplete()

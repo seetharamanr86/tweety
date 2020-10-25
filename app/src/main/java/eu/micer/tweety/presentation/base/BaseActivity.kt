@@ -4,10 +4,13 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import io.reactivex.disposables.CompositeDisposable
 
-abstract class BaseActivity : AppCompatActivity() {
+abstract class BaseActivity<I : MviIntent, S : MviViewState> : AppCompatActivity(), MviView<I, S> {
 
-    abstract fun getViewModel(): BaseViewModel
+    abstract fun getViewModel(): BaseViewModel<I, S>
+
+    protected val disposables = CompositeDisposable()
 
     private var toast: Toast? = null
 
@@ -23,5 +26,10 @@ abstract class BaseActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    override fun onDestroy() {
+        disposables.dispose()
+        super.onDestroy()
     }
 }

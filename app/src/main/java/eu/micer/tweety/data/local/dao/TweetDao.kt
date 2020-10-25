@@ -3,7 +3,6 @@ package eu.micer.tweety.data.local.dao
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import eu.micer.tweety.data.local.entity.TweetEntity
-import io.reactivex.Flowable
 import io.reactivex.Maybe
 
 @Dao
@@ -27,7 +26,7 @@ interface TweetDao {
     fun findById(id: Int): Maybe<TweetEntity>
 
     @Query("SELECT * FROM TweetEntity")
-    fun findAll(): Flowable<List<TweetEntity>>
+    fun findAll(): Maybe<List<TweetEntity>>
 
     @Query("SELECT * FROM TweetEntity")
     fun findAllLiveData(): LiveData<List<TweetEntity>>

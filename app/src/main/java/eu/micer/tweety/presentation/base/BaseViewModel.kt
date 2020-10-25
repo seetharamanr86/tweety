@@ -6,12 +6,12 @@ import androidx.lifecycle.ViewModel
 import eu.micer.tweety.presentation.util.event.Event1
 import io.reactivex.disposables.CompositeDisposable
 
-open class BaseViewModel : ViewModel() {
-    protected val compositeDisposable = CompositeDisposable()
+abstract class BaseViewModel<I : MviIntent, S : MviViewState> : ViewModel(), MviViewModel<I, S> {
+    protected val disposables = CompositeDisposable()
     protected val showErrorEvent = MutableLiveData<Event1<String>>()
 
     override fun onCleared() {
-        compositeDisposable.dispose()
+        disposables.dispose()
         super.onCleared()
     }
 

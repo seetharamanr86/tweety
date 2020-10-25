@@ -3,6 +3,7 @@ package eu.micer.tweety.app.di
 import eu.micer.tweety.data.local.di.databaseModule
 import eu.micer.tweety.data.remote.di.networkModule
 import eu.micer.tweety.domain.di.repositoryModule
+import eu.micer.tweety.presentation.di.processorModule
 import eu.micer.tweety.presentation.di.viewModelModule
 import org.koin.dsl.module
 
@@ -23,6 +24,7 @@ val allModules = listOf(
     appModule,
     networkModule,
     databaseModule,
+    processorModule,
     repositoryModule,
     viewModelModule
 )
